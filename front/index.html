@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Suprema Kanban Board</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-error": "#690005",
+                        "on-secondary-container": "#beb8ad",
+                        "primary": "#ffd196",
+                        "tertiary-fixed": "#ebe1da",
+                        "on-background": "#e2e2e2",
+                        "on-secondary-fixed-variant": "#4a463e",
+                        "surface-variant": "#353535",
+                        "surface-tint": "#ffb954",
+                        "surface-container-high": "#2a2a2a",
+                        "secondary-container": "#4c4940",
+                        "surface-bright": "#393939",
+                        "on-tertiary-fixed": "#1f1b17",
+                        "on-secondary-fixed": "#1e1b14",
+                        "secondary": "#ccc6bb",
+                        "tertiary-fixed-dim": "#cec5bf",
+                        "error-container": "#93000a",
+                        "background": "#161412",
+                        "inverse-on-surface": "#303030",
+                        "secondary-fixed-dim": "#ccc6bb",
+                        "surface-dim": "#161412",
+                        "on-primary-container": "#6a4400",
+                        "secondary-fixed": "#e8e2d6",
+                        "on-surface-variant": "#d5c4b0",
+                        "on-primary": "#452b00",
+                        "error": "#ffb4ab",
+                        "primary-fixed": "#ffddb4",
+                        "primary-fixed-dim": "#ffb954",
+                        "on-tertiary-fixed-variant": "#4c4641",
+                        "on-primary-fixed-variant": "#633f00",
+                        "primary-container": "#f4b04c",
+                        "tertiary": "#e0d7d0",
+                        "surface-container-lowest": "#0e0e0e",
+                        "outline-variant": "#514536",
+                        "outline": "#9e8e7d",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary": "#333028",
+                        "on-primary-fixed": "#291800",
+                        "on-tertiary-container": "#514b46",
+                        "surface-container": "#231F1C",
+                        "surface-container-highest": "#353535",
+                        "inverse-surface": "#e2e2e2",
+                        "inverse-primary": "#835500",
+                        "on-tertiary": "#352f2b",
+                        "surface-container-low": "#1b1b1b",
+                        "on-surface": "#e2e2e2",
+                        "surface": "#161412",
+                        "tertiary-container": "#c4bbb5"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "margin-desktop": "64px",
+                        "container-max": "1440px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "margin-mobile": "20px"
+                    },
+                    fontFamily: {
+                        "display-lg": ["Geist"],
+                        "body-md": ["Geist"],
+                        "headline-md": ["Geist"],
+                        "body-lg": ["Geist"],
+                        "display-lg-mobile": ["Geist"],
+                        "label-sm": ["Geist"]
+                    },
+                    fontSize: {
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #161412;
+            color: #FAF3E7;
+            font-family: 'Geist', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Custom Colors */
+        .prompt-gradient-text { 
+            background: linear-gradient(135deg, #F4B04C 0%, #ECA045 50%, #D98522 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .kanban-card {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #302B27; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #514536; }
+
+        /* Hide drawer initially */
+        #club-drawer:not(.open) {
+            transform: translateX(-100%);
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen w-screen overflow-hidden antialiased">
+<!-- Floating Drawer (Hidden by default) -->
+<!-- Floating TopNavBar -->
+<header class="flex justify-between items-center w-full px-12 py-8 max-w-[1920px] mx-auto bg-[#161412] z-30 flex-shrink-0">
+<div class="flex items-center gap-4">
+<div class="font-display-lg text-display-lg font-bold tracking-tight" style="color: rgb(236, 160, 69); font-size: 28px;">
+            Suprema
+        </div>
+</div>
+<nav class="flex items-center gap-10 ml-12"><a class="text-sm font-bold tracking-[0.1em] prompt-gradient-text uppercase" href="#">KANBAN</a><a class="text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">CLUBES</a><a class="text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">USUÁRIOS</a><a class="text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">ANALYTICS</a></nav>
+<div class="flex items-center gap-8">
+<button class="text-secondary hover:text-primary transition-colors p-2" style="color: rgb(144, 136, 125);">
+<span class="material-symbols-outlined">search</span>
+</button>
+<div class="w-12 h-12 rounded-full overflow-hidden border" style="border-color: #302B27;">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCohVPEXyWkVHhn7H1orWaXX9c5SlJoVNbPdDMTzwfssqbxDpxKsUBj4VUrw4CbY_6IodliBVBOTQP5KC9c0WhMXAwWra_OOpbQalrBaAwfIcryrdhrNKrU2UUGjY_gUNb3i7LAXE7VEPOKh9Dg-4Lddu4aBJsLtjrGTh7DLbcDEhcruvxUb0Qy96JrNnJLiryQOKxdy_q6PcysigR5ExbetE7pRs_VsFWCiMdrzNseso1LHC3vAMEEHVdMkGRoAiHazrKGX-QjftE"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden w-full max-w-[1920px] mx-auto relative">
+<!-- Kanban Board Canvas (Now full width) -->
+<main class="flex-1 overflow-x-auto overflow-y-hidden p-8 pt-0">
+<div class="grid grid-cols-5 gap-4 w-full h-full pb-4">
+<!-- Column 1: Caixa de Entrada -->
+{% set fase = colunas["Caixa de entrada"] %}
+<div class="flex flex-col min-w-0 rounded-2xl border p-4" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+<div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
+<h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Caixa de Entrada</h3>
+<div class="flex flex-row items-center gap-3">
+<span class="px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-4 pr-2">
+{% for card in fase %}
+<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
+<button class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_left</span>
+</button>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
+</button>
+<div class="flex flex-col gap-3 relative">
+<div class="flex items-center gap-3 w-full">
+<span class="material-symbols-outlined text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
+<h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
+        {{ card.titulo }}
+        </h4>
+<button class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-y-3 gap-x-3">
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">CLUBE</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.clube[:14] ~ '.' if card.clube|length > 14 else card.clube }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">MODALIDADE</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.jogo }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">DATA</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.data_hora }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">PROTOCOLO</div>
+<div class="text-xs font-medium text-[#ECA045] truncate uppercase">{{ card.protocolo }}</div>
+</div>
+</div>
+<div class="mt-2 text-center">
+<span class="px-3 py-1 rounded-full text-[11px] font-medium inline-block border border-[#302B27]" style="background-color: rgba(255, 255, 255, 0.03); color: rgb(144, 136, 125);">Pending Review</span>
+</div>
+</div></div>
+{% endfor %}
+<div class="rounded-xl py-3 px-3 border border-dashed flex justify-center items-center cursor-pointer hover:bg-[rgba(255,255,255,0.02)] transition-colors mb-4 gap-1" style="border-color: #302B27; color: #90887D; background-color: rgba(255, 255, 255, 0.01);"><span class="material-symbols-outlined text-base">add</span> <span class="font-medium text-sm uppercase">Adicionar Card</span></div>
+</div>
+</div>
+<!-- Column 2: Análise de Estrutura -->
+{% set fase = colunas["Analise de estrutura"] %}
+<div class="flex flex-col min-w-0 rounded-2xl border p-4" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+<div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
+<h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Análise de Estrutura</h3>
+<div class="flex flex-row items-center gap-3">
+<span class="px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-4 pr-2">
+{% for card in fase %}
+<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
+<button class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_left</span>
+</button>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
+</button>
+<div class="flex flex-col gap-3 relative">
+<div class="flex items-center gap-3 w-full">
+<span class="material-symbols-outlined text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
+<h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
+        {{ card.titulo }}
+        </h4>
+<button class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-y-3 gap-x-3">
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">CLUBE</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.clube[:14] ~ '.' if card.clube|length > 14 else card.clube }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">MODALIDADE</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.jogo }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">DATA</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.data_hora }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">PROTOCOLO</div>
+<div class="text-xs font-medium text-[#ECA045] truncate uppercase">{{ card.protocolo }}</div>
+</div>
+</div>
+<div class="mt-2 text-center">
+<span class="px-3 py-1 rounded-full text-[11px] font-medium inline-block border border-[#302B27]" style="background-color: rgba(255, 255, 255, 0.03); color: rgb(144, 136, 125);">Pending Review</span>
+</div>
+</div></div>
+{% endfor %}
+</div>
+</div>
+<!-- Column 3: Criação -->
+{% set fase = colunas["Criacao"] %}
+<div class="flex flex-col min-w-0 rounded-2xl border p-4" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+<div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
+<h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Criação</h3>
+<div class="flex flex-row items-center gap-3">
+<span class="px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-4 pr-2">
+{% for card in fase %}
+<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
+<button class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_left</span>
+</button>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
+</button>
+<div class="flex flex-col gap-3 relative">
+<div class="flex items-center gap-3 w-full">
+<span class="material-symbols-outlined text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
+<h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
+        {{ card.titulo }}
+        </h4>
+<button class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-y-3 gap-x-3">
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">CLUBE</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.clube[:14] ~ '.' if card.clube|length > 14 else card.clube }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">MODALIDADE</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.jogo }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">DATA</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.data_hora }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">PROTOCOLO</div>
+<div class="text-xs font-medium text-[#ECA045] truncate uppercase">{{ card.protocolo }}</div>
+</div>
+</div>
+<div class="mt-2 text-center">
+<span class="px-3 py-1 rounded-full text-[11px] font-medium inline-block border border-[#302B27]" style="background-color: rgba(255, 255, 255, 0.03); color: rgb(144, 136, 125);">Pending Review</span>
+</div>
+</div></div>
+{% endfor %}
+</div>
+</div>
+<!-- Column 4: Lobby -->
+{% set fase = colunas["Lobby"] %}
+<div class="flex flex-col min-w-0 rounded-2xl border p-4" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+<div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
+<h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Lobby</h3>
+<div class="flex flex-row items-center gap-3">
+<span class="px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-4 pr-2">
+{% for card in fase %}
+<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
+<button class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_left</span>
+</button>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
+</button>
+<div class="flex flex-col gap-3 relative">
+<div class="flex items-center gap-3 w-full">
+<span class="material-symbols-outlined text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
+<h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
+        {{ card.titulo }}
+        </h4>
+<button class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-y-3 gap-x-3">
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">CLUBE</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.clube[:14] ~ '.' if card.clube|length > 14 else card.clube }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">MODALIDADE</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.jogo }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">DATA</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.data_hora }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">PROTOCOLO</div>
+<div class="text-xs font-medium text-[#ECA045] truncate uppercase">{{ card.protocolo }}</div>
+</div>
+</div>
+<div class="mt-2 text-center">
+<span class="px-3 py-1 rounded-full text-[11px] font-medium inline-block border border-[#302B27]" style="background-color: rgba(255, 255, 255, 0.03); color: rgb(144, 136, 125);">Pending Review</span>
+</div>
+</div></div>
+{% endfor %}
+</div>
+</div>
+<!-- Column 5: Concluído -->
+{% set fase = colunas["Concluido"] %}
+<div class="flex flex-col min-w-0 rounded-2xl border p-4" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+<div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
+<h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Concluído</h3>
+<div class="flex flex-row items-center gap-3">
+<span class="px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-4 pr-2">
+{% for card in fase %}
+<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
+<button class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_left</span>
+</button>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
+</button>
+<div class="flex flex-col gap-3 relative">
+<div class="flex items-center gap-3 w-full">
+<span class="material-symbols-outlined text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
+<h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
+        {{ card.titulo }}
+        </h4>
+<button class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-y-3 gap-x-3">
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">CLUBE</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.clube[:14] ~ '.' if card.clube|length > 14 else card.clube }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">MODALIDADE</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.jogo }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">DATA</div>
+<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">{{ card.data_hora }}</div>
+</div>
+<div class="text-center flex flex-col items-center">
+<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">PROTOCOLO</div>
+<div class="text-xs font-medium text-[#ECA045] truncate uppercase">{{ card.protocolo }}</div>
+</div>
+</div>
+<div class="mt-2 text-center">
+<span class="px-3 py-1 rounded-full text-[11px] font-medium inline-block border border-[#302B27]" style="background-color: rgba(255, 255, 255, 0.03); color: rgb(144, 136, 125);">Pending Review</span>
+</div>
+</div></div>
+{% endfor %}
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
