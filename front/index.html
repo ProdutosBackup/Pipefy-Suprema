@@ -126,6 +126,12 @@
         #club-drawer:not(.open) {
             transform: translateX(-100%);
         }
+
+        /* Concluído: cards finalizados com aspecto atenuado */
+        [data-fase-id="326331445"] .kanban-card {
+            opacity: 0.4;
+            filter: grayscale(0.3);
+        }
     </style>
 </head>
 <body class="flex flex-col h-screen w-screen overflow-hidden antialiased">
@@ -154,7 +160,7 @@
 <!-- Column 1: Caixa de Entrada -->
 {% set fase_data = colunas["Caixa de entrada"] %}
 {% set fase = fase_data.cards %}
-<div class="flex flex-col min-w-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+<div class="flex flex-col min-w-0 min-h-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
 <div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
 <h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Caixa de Entrada</h3>
 <div class="flex flex-row items-center gap-3">
@@ -209,7 +215,7 @@
 <!-- Column 2: Análise de Estrutura -->
 {% set fase_data = colunas["Analise de estrutura"] %}
 {% set fase = fase_data.cards %}
-<div class="flex flex-col min-w-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+<div class="flex flex-col min-w-0 min-h-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
 <div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
 <h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Análise de Estrutura</h3>
 <div class="flex flex-row items-center gap-3">
@@ -263,7 +269,7 @@
 <!-- Column 3: Criação -->
 {% set fase_data = colunas["Criacao"] %}
 {% set fase = fase_data.cards %}
-<div class="flex flex-col min-w-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+<div class="flex flex-col min-w-0 min-h-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
 <div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
 <h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Criação</h3>
 <div class="flex flex-row items-center gap-3">
@@ -317,7 +323,7 @@
 <!-- Column 4: Lobby -->
 {% set fase_data = colunas["Lobby"] %}
 {% set fase = fase_data.cards %}
-<div class="flex flex-col min-w-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+<div class="flex flex-col min-w-0 min-h-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
 <div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
 <h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Lobby</h3>
 <div class="flex flex-row items-center gap-3">
@@ -371,7 +377,7 @@
 <!-- Column 5: Concluído -->
 {% set fase_data = colunas["Concluido"] %}
 {% set fase = fase_data.cards %}
-<div class="flex flex-col min-w-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+<div class="flex flex-col min-w-0 min-h-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
 <div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
 <h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Concluído</h3>
 <div class="flex flex-row items-center gap-3">
