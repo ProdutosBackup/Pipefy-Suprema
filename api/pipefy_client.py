@@ -61,3 +61,77 @@ def fetch_phases(pipe_id):
     """
     data = _post(query, variables={"pipeId": pipe_id})
     return data.get("data", {}).get("pipe", {}).get("phases", [])
+
+
+def fetch_card_by_id(card_id):
+    query = """
+    query ($cardId: ID!) {
+      card(id: $cardId) {
+        id
+        title
+        fields {
+          id
+          name
+          value
+        }
+        phase { id }
+      }
+    }
+    """
+    data = _post(query, variables={"cardId": card_id})
+    return data.get("data", {}).get("card", {})
+
+
+def move_card_to_phase(card_id, phase_id):
+    query = """
+    mutation ($cardId: ID!, $destinationPhaseId: ID!) {
+      moveCardToPhase(input: {
+        card_id: $cardId,
+        destination_phase_id: $destinationPhaseId
+      }) {
+        card { id title }
+      }
+    }
+    """
+    data = _post(query, variables={
+        "cardId": card_id,
+        "destinationPhaseId": phase_id
+    })
+    return data.get("data", {}).get("moveCardToPhase", {})
+
+
+def duplicate_card(card_id, pipe_id, phase_id):
+    card_data = fetch_card_by_id(card_id)
+    if not card_data:
+        raise Exception("Card não encontrado")
+
+    title = card_data.get("title", "")
+    fields_attributes = [
+        {"field_id": f["id"], "value": f.get("value", "")}
+        for f in card_data.get("fields", [])
+        if f.get("id")
+    ]
+
+    query = """
+    mutation ($pipeId: ID!, $phaseId: ID!, $title: String!, $fieldsAttributes: [FieldInput!]!) {
+      createCard(input: {
+        pipe_id: $pipeId,
+        phase_id: $phaseId,
+        title: $title,
+        fields_attributes: $fieldsAttributes
+      }) {
+        card {
+          id
+          title
+          fields { name value }
+        }
+      }
+    }
+    """
+    data = _post(query, variables={
+        "pipeId": pipe_id,
+        "phaseId": phase_id,
+        "title": title,
+        "fieldsAttributes": fields_attributes
+    })
+    return data.get("data", {}).get("createCard", {})

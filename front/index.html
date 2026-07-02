@@ -5,6 +5,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Suprema Kanban Board</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -151,30 +152,31 @@
 <main class="flex-1 overflow-x-auto overflow-y-hidden p-8 pt-0">
 <div class="grid grid-cols-5 gap-4 w-full h-full pb-4">
 <!-- Column 1: Caixa de Entrada -->
-{% set fase = colunas["Caixa de entrada"] %}
-<div class="flex flex-col min-w-0 rounded-2xl border p-4" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+{% set fase_data = colunas["Caixa de entrada"] %}
+{% set fase = fase_data.cards %}
+<div class="flex flex-col min-w-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
 <div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
 <h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Caixa de Entrada</h3>
 <div class="flex flex-row items-center gap-3">
-<span class="px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
+<span class="contador-badge px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
 </div>
 </div>
-<div class="flex-1 overflow-y-auto space-y-4 pr-2">
+<div class="coluna-body flex-1 overflow-y-auto space-y-4 pr-2">
 {% for card in fase %}
-<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
-<button class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" data-card-id="{{ card.id }}" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
+<button data-acao="mover-esquerda" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_left</span>
 </button>
-<button class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<button data-acao="mover-direita" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
 </button>
 <div class="flex flex-col gap-3 relative">
 <div class="flex items-center gap-3 w-full">
-<span class="material-symbols-outlined text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
+<span class="material-symbols-outlined drag-handle text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
 <h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
         {{ card.titulo }}
         </h4>
-<button class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<button data-acao="duplicar" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
 <span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
 </button>
 </div>
@@ -201,34 +203,35 @@
 </div>
 </div></div>
 {% endfor %}
-<div class="rounded-xl py-3 px-3 border border-dashed flex justify-center items-center cursor-pointer hover:bg-[rgba(255,255,255,0.02)] transition-colors mb-4 gap-1" style="border-color: #302B27; color: #90887D; background-color: rgba(255, 255, 255, 0.01);"><span class="material-symbols-outlined text-base">add</span> <span class="font-medium text-sm uppercase">Adicionar Card</span></div>
+<div class="rounded-xl py-3 px-3 border border-dashed flex justify-center items-center cursor-pointer hover:bg-[rgba(255,255,255,0.02)] transition-colors mb-4 gap-1 adicionar-card-footer" style="border-color: #302B27; color: #90887D; background-color: rgba(255, 255, 255, 0.01);"><span class="material-symbols-outlined text-base">add</span> <span class="font-medium text-sm uppercase">Adicionar Card</span></div>
 </div>
 </div>
 <!-- Column 2: Análise de Estrutura -->
-{% set fase = colunas["Analise de estrutura"] %}
-<div class="flex flex-col min-w-0 rounded-2xl border p-4" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+{% set fase_data = colunas["Analise de estrutura"] %}
+{% set fase = fase_data.cards %}
+<div class="flex flex-col min-w-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
 <div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
 <h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Análise de Estrutura</h3>
 <div class="flex flex-row items-center gap-3">
-<span class="px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
+<span class="contador-badge px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
 </div>
 </div>
-<div class="flex-1 overflow-y-auto space-y-4 pr-2">
+<div class="coluna-body flex-1 overflow-y-auto space-y-4 pr-2">
 {% for card in fase %}
-<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
-<button class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" data-card-id="{{ card.id }}" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
+<button data-acao="mover-esquerda" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_left</span>
 </button>
-<button class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<button data-acao="mover-direita" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
 </button>
 <div class="flex flex-col gap-3 relative">
 <div class="flex items-center gap-3 w-full">
-<span class="material-symbols-outlined text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
+<span class="material-symbols-outlined drag-handle text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
 <h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
         {{ card.titulo }}
         </h4>
-<button class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<button data-acao="duplicar" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
 <span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
 </button>
 </div>
@@ -258,30 +261,31 @@
 </div>
 </div>
 <!-- Column 3: Criação -->
-{% set fase = colunas["Criacao"] %}
-<div class="flex flex-col min-w-0 rounded-2xl border p-4" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+{% set fase_data = colunas["Criacao"] %}
+{% set fase = fase_data.cards %}
+<div class="flex flex-col min-w-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
 <div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
 <h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Criação</h3>
 <div class="flex flex-row items-center gap-3">
-<span class="px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
+<span class="contador-badge px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
 </div>
 </div>
-<div class="flex-1 overflow-y-auto space-y-4 pr-2">
+<div class="coluna-body flex-1 overflow-y-auto space-y-4 pr-2">
 {% for card in fase %}
-<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
-<button class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" data-card-id="{{ card.id }}" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
+<button data-acao="mover-esquerda" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_left</span>
 </button>
-<button class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<button data-acao="mover-direita" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
 </button>
 <div class="flex flex-col gap-3 relative">
 <div class="flex items-center gap-3 w-full">
-<span class="material-symbols-outlined text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
+<span class="material-symbols-outlined drag-handle text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
 <h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
         {{ card.titulo }}
         </h4>
-<button class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<button data-acao="duplicar" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
 <span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
 </button>
 </div>
@@ -311,30 +315,31 @@
 </div>
 </div>
 <!-- Column 4: Lobby -->
-{% set fase = colunas["Lobby"] %}
-<div class="flex flex-col min-w-0 rounded-2xl border p-4" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+{% set fase_data = colunas["Lobby"] %}
+{% set fase = fase_data.cards %}
+<div class="flex flex-col min-w-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
 <div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
 <h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Lobby</h3>
 <div class="flex flex-row items-center gap-3">
-<span class="px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
+<span class="contador-badge px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
 </div>
 </div>
-<div class="flex-1 overflow-y-auto space-y-4 pr-2">
+<div class="coluna-body flex-1 overflow-y-auto space-y-4 pr-2">
 {% for card in fase %}
-<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
-<button class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" data-card-id="{{ card.id }}" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
+<button data-acao="mover-esquerda" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_left</span>
 </button>
-<button class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<button data-acao="mover-direita" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
 </button>
 <div class="flex flex-col gap-3 relative">
 <div class="flex items-center gap-3 w-full">
-<span class="material-symbols-outlined text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
+<span class="material-symbols-outlined drag-handle text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
 <h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
         {{ card.titulo }}
         </h4>
-<button class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<button data-acao="duplicar" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
 <span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
 </button>
 </div>
@@ -364,30 +369,31 @@
 </div>
 </div>
 <!-- Column 5: Concluído -->
-{% set fase = colunas["Concluido"] %}
-<div class="flex flex-col min-w-0 rounded-2xl border p-4" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
+{% set fase_data = colunas["Concluido"] %}
+{% set fase = fase_data.cards %}
+<div class="flex flex-col min-w-0 rounded-2xl border p-4" data-fase-id="{{ fase_data.id }}" style="border-color: rgba(60, 54, 49, 0.4); background-color: rgba(22, 20, 18, 0.6);">
 <div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: rgba(60, 54, 49, 0.5);">
 <h3 class="font-headline-md text-sm font-semibold uppercase tracking-[0.2em]" style="color: rgb(250, 243, 231);">Concluído</h3>
 <div class="flex flex-row items-center gap-3">
-<span class="px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
+<span class="contador-badge px-2.5 py-1 rounded-md text-xs font-bold" style="background-color: rgb(53, 53, 53); color: rgb(160, 150, 140);">{{ fase|length }}</span>
 </div>
 </div>
-<div class="flex-1 overflow-y-auto space-y-4 pr-2">
+<div class="coluna-body flex-1 overflow-y-auto space-y-4 pr-2">
 {% for card in fase %}
-<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
-<button class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" data-card-id="{{ card.id }}" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">
+<button data-acao="mover-esquerda" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_left</span>
 </button>
-<button class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+<button data-acao="mover-direita" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
 </button>
 <div class="flex flex-col gap-3 relative">
 <div class="flex items-center gap-3 w-full">
-<span class="material-symbols-outlined text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
+<span class="material-symbols-outlined drag-handle text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
 <h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
         {{ card.titulo }}
         </h4>
-<button class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<button data-acao="duplicar" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
 <span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
 </button>
 </div>
@@ -419,4 +425,105 @@
 </div>
 </main>
 </div>
+<script>
+const COLUNA_ORDEM = ['326331441','326331442','326331443','326331444','326331445'];
+
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-acao]');
+  if (!btn) return;
+
+  const cardEl = btn.closest('[data-card-id]');
+  const cardId = cardEl?.dataset.cardId;
+  if (!cardId) return;
+
+  const faseAtual = btn.closest('[data-fase-id]')?.dataset.faseId;
+  const acao = btn.dataset.acao;
+
+  if (acao === 'duplicar') {
+    fetch('/api/duplicar-card', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ card_id: cardId, fase_id: faseAtual })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) window.location.reload();
+      else alert('Erro: ' + (d.error || 'desconhecido'));
+    })
+    .catch(err => alert('Erro de rede: ' + err.message));
+    return;
+  }
+
+  if (acao === 'mover-esquerda' || acao === 'mover-direita') {
+    const idx = COLUNA_ORDEM.indexOf(faseAtual);
+    if (idx === -1) return;
+    const dir = acao === 'mover-direita' ? 1 : -1;
+    const destId = COLUNA_ORDEM[idx + dir];
+    if (!destId) return;
+
+    fetch('/api/mover-card', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ card_id: cardId, fase_destino_id: destId })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) window.location.reload();
+      else alert('Erro: ' + (d.error || 'desconhecido'));
+    })
+    .catch(err => alert('Erro de rede: ' + err.message));
+  }
+});
+</script>
+<script>
+document.querySelectorAll('.coluna-body').forEach(el => {
+  new Sortable(el, {
+    group: 'kanban',
+    animation: 200,
+    ghostClass: 'opacity-30',
+    dragClass: 'opacity-90',
+    filter: '.adicionar-card-footer',
+    handle: '.drag-handle',
+    onEnd: function(evt) {
+      if (evt.from === evt.to) return;
+      const cardEl = evt.item;
+      const cardId = cardEl.dataset.cardId;
+      const destFaseId = evt.to.closest('[data-fase-id]').dataset.faseId;
+      if (!cardId || !destFaseId) return;
+      cardEl.style.opacity = '0.4';
+      cardEl.style.pointerEvents = 'none';
+      fetch('/api/mover-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ card_id: cardId, fase_destino_id: destFaseId })
+      })
+      .then(r => r.json())
+      .then(d => {
+        cardEl.style.opacity = '';
+        cardEl.style.pointerEvents = '';
+        if (d.success) {
+          atualizarContadores();
+        } else {
+          alert('Erro: ' + (d.error || 'desconhecido'));
+          evt.from.appendChild(cardEl);
+        }
+      })
+      .catch(err => {
+        cardEl.style.opacity = '';
+        cardEl.style.pointerEvents = '';
+        alert('Erro de rede: ' + err.message);
+        evt.from.appendChild(cardEl);
+      });
+    }
+  });
+});
+function atualizarContadores() {
+  document.querySelectorAll('[data-fase-id]').forEach(col => {
+    const badge = col.querySelector('.contador-badge');
+    if (badge) {
+      badge.textContent = col.querySelectorAll('[data-card-id]').length;
+    }
+  });
+}
+</script>
 </body></html>
