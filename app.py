@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify
 from api.pipefy_client import fetch_cards_by_phase, move_card_to_phase, duplicate_card
-from utils.helpers import transform_pipefy_card
+from utils.helpers import transform_pipefy_card, sort_cards_by_date
 
 load_dotenv()
 
@@ -29,7 +29,7 @@ def index():
             raw = fetch_cards_by_phase(cfg["id"])
             colunas[slug] = {
                 "id": cfg["id"],
-                "cards": [transform_pipefy_card(e) for e in raw]
+                "cards": sort_cards_by_date([transform_pipefy_card(e) for e in raw])
             }
         except Exception as e:
             print(f"[ERRO] {slug}: {e}")

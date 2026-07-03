@@ -145,9 +145,10 @@
 </div>
 <nav class="flex items-center gap-10 ml-12"><a class="text-sm font-bold tracking-[0.1em] prompt-gradient-text uppercase" href="#">KANBAN</a><a class="text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">CLUBES</a><a class="text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">USUÁRIOS</a><a class="text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">ANALYTICS</a></nav>
 <div class="flex items-center gap-8">
-<button class="text-secondary hover:text-primary transition-colors p-2" style="color: rgb(144, 136, 125);">
-<span class="material-symbols-outlined">search</span>
-</button>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-[#90887D] pointer-events-none" style="font-size: 18px;">search</span>
+<input type="text" id="pesquisa-input" placeholder="Pesquisar..." class="w-48 bg-[#231F1C] border border-[#302B27] rounded-lg py-2 pl-10 pr-3 text-sm text-[#FAF3E7] placeholder-[#90887D] focus:outline-none focus:border-[#ECA045] transition-colors">
+</div>
 <div class="w-12 h-12 rounded-full overflow-hidden border" style="border-color: #302B27;">
 <img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCohVPEXyWkVHhn7H1orWaXX9c5SlJoVNbPdDMTzwfssqbxDpxKsUBj4VUrw4CbY_6IodliBVBOTQP5KC9c0WhMXAwWra_OOpbQalrBaAwfIcryrdhrNKrU2UUGjY_gUNb3i7LAXE7VEPOKh9Dg-4Lddu4aBJsLtjrGTh7DLbcDEhcruvxUb0Qy96JrNnJLiryQOKxdy_q6PcysigR5ExbetE7pRs_VsFWCiMdrzNseso1LHC3vAMEEHVdMkGRoAiHazrKGX-QjftE"/>
 </div>
@@ -531,5 +532,26 @@ function atualizarContadores() {
     }
   });
 }
+
+document.getElementById('pesquisa-input').addEventListener('input', function() {
+  const termo = this.value.toLowerCase().trim();
+  const ativo = termo !== '';
+
+  document.querySelectorAll('.kanban-card').forEach(card => {
+    const corresponde = !ativo || card.textContent.toLowerCase().includes(termo);
+    card.classList.toggle('hidden', !corresponde);
+  });
+
+  document.querySelectorAll('.adicionar-card-footer').forEach(el => {
+    el.classList.toggle('hidden', ativo);
+  });
+
+  document.querySelectorAll('[data-fase-id]').forEach(col => {
+    const badge = col.querySelector('.contador-badge');
+    if (badge) {
+      badge.textContent = col.querySelectorAll('.kanban-card:not(.hidden)').length;
+    }
+  });
+});
 </script>
 </body></html>
