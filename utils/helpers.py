@@ -16,10 +16,24 @@ def transform_pipefy_card(edge):
 
 def sort_cards_by_date(cards_list):
     def parse_date(card):
-        data_str = card.get("data_hora", "")
+        # Limpeza rigorosa: remove espaços normais e non-breaking spaces (\xa0)
+        data_str = card.get("data_hora", "").strip().replace('\xa0', ' ')
+        if not data_str:
+            return datetime.min
+
+        # 1. Tentar formato brasileiro
         try:
             return datetime.strptime(data_str, "%d/%m/%Y %H:%M")
-        except Exception:
-            print(f"[DEBUG] Falha ao converter data: '{data_str}'")
-            return datetime.min
+        except ValueError:
+            pass
+
+        # 2. Tentar formato ISO
+        try:
+            return datetime.strptime(data_str[:10], "%Y-%m-%d")
+        except ValueError:
+            pass
+
+        print(f"[DEBUG FALHA] Formato não reconhecido: {repr(data_str)}")
+        return datetime.min
+
     return sorted(cards_list, key=parse_date, reverse=True)

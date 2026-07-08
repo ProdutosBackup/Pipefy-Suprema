@@ -30,7 +30,7 @@ def fetch_cards_by_phase(phase_id):
     query = """
     query ($phaseId: ID!) {
       phase(id: $phaseId) {
-        cards {
+        cards(last: 50) {
           edges {
             node {
               id
