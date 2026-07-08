@@ -66,19 +66,22 @@ def fetch_phases(pipe_id):
 def fetch_card_by_id(card_id):
     query = """
     query ($cardId: ID!) {
-      card(id: $cardId) {
-        id
-        title
-        fields {
-          id
-          name
-          value
+        card(id: $cardId) {
+            id
+            title
+            fields {
+                name
+                value
+            }
         }
-        phase { id }
-      }
     }
     """
     data = _post(query, variables={"cardId": card_id})
+    
+    # Log em caso de erro na resposta GraphQL
+    if "errors" in data:
+        raise Exception(f"Erro GraphQL: {data['errors'][0].get('message')}")
+        
     return data.get("data", {}).get("card", {})
 
 

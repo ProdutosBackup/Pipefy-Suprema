@@ -554,4 +554,47 @@ document.getElementById('pesquisa-input').addEventListener('input', function() {
   });
 });
 </script>
+
+<!-- Modal de Detalhes do Card -->
+<div id="card-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+  <div class="absolute inset-0 bg-black/60" onclick="fecharModal()"></div>
+  <div class="relative bg-[#1A1816] border border-[#302B27] rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+    <button onclick="fecharModal()" class="absolute top-4 right-4 text-[#90887D] hover:text-white">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <div id="modal-conteudo"></div>
+  </div>
+</div>
+
+<script>
+function abrirModal(cardId) {
+    fetch(`/api/cards/${cardId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) return;
+            const card = data.card;
+            let html = `<h2 class="text-lg font-bold text-[#D4CFC7] mb-4">${card.titulo}</h2>`;
+            html += `<div class="space-y-2 text-sm">`;
+            card.campos.forEach(c => {
+                html += `<div><span class="text-[#7A7265]">${c.name}:</span> <span class="text-[#D4CFC7]">${c.value || '-'}</span></div>`;
+            });
+            html += `</div>`;
+            document.getElementById('modal-conteudo').innerHTML = html;
+            document.getElementById('card-modal').classList.remove('hidden');
+        });
+}
+
+function fecharModal() {
+    document.getElementById('card-modal').classList.add('hidden');
+}
+
+document.addEventListener('pointerdown', function(e) {
+    const card = e.target.closest('.kanban-card');
+    if (card && !e.target.closest('[data-acao]') && !e.target.closest('.drag-handle')) {
+        const cardId = card.dataset.cardId;
+        if (cardId) abrirModal(cardId);
+    }
+});
+</script>
+
 </body></html>
