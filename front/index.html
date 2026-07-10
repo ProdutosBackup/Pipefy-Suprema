@@ -557,12 +557,29 @@ document.getElementById('pesquisa-input').addEventListener('input', function() {
 
 <!-- Modal de Detalhes do Card -->
 <div id="card-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-  <div class="absolute inset-0 bg-black/60" onclick="fecharModal()"></div>
-  <div class="relative bg-[#1A1816] border border-[#302B27] rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
-    <button onclick="fecharModal()" class="absolute top-4 right-4 text-[#90887D] hover:text-white">
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="fecharModal()"></div>
+  <div class="relative bg-[#1A1816] border border-[#302B27] rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[80vh] flex flex-col shadow-2xl">
+    <button onclick="fecharModal()" class="absolute top-4 right-4 text-[#90887D] hover:text-white transition-colors">
       <span class="material-symbols-outlined">close</span>
     </button>
-    <div id="modal-conteudo"></div>
+
+    <h2 class="text-lg font-bold text-[#ECA045] mb-5 pr-8 uppercase tracking-wider" id="modal-titulo"></h2>
+
+    <div class="flex gap-1 bg-[#2A2522] rounded-lg p-1 mb-6 self-start">
+      <button id="tab-aba1" class="px-4 py-2 text-sm font-medium rounded-md bg-[#ECA045] text-black transition-all">
+        Informações Iniciais
+      </button>
+      <button id="tab-aba2" class="px-4 py-2 text-sm font-medium rounded-md text-[#7A7265] hover:text-[#D4CFC7] transition-all">
+        Estrutura Solicitada
+      </button>
+    </div>
+
+    <div class="overflow-y-auto pr-2 custom-scrollbar">
+      <div id="aba1-conteudo" class="space-y-3 text-sm"></div>
+      <div id="aba2-conteudo" class="space-y-3 text-sm hidden">
+          <p class="text-[#7A7265] italic">Em construção...</p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -572,21 +589,122 @@ function abrirModal(cardId) {
         .then(r => r.json())
         .then(data => {
             if (!data.success) return;
+
             const card = data.card;
-            let html = `<h2 class="text-lg font-bold text-[#D4CFC7] mb-4">${card.titulo}</h2>`;
-            html += `<div class="space-y-2 text-sm">`;
-            card.campos.forEach(c => {
-                html += `<div><span class="text-[#7A7265]">${c.name}:</span> <span class="text-[#D4CFC7]">${c.value || '-'}</span></div>`;
-            });
-            html += `</div>`;
-            document.getElementById('modal-conteudo').innerHTML = html;
+            console.log('Campos recebidos da API:', card.campos);
+
+            const normalizar = (str) => str ? str.toLowerCase().trim().replace(/\s+/g, ' ') : '';
+
+            const getValor = (chaveBusca) => {
+                const busca = normalizar(chaveBusca);
+                let campo = card.campos.find(c => normalizar(c.name) === busca);
+                if (!campo) campo = card.campos.find(c => normalizar(c.name).includes(busca));
+                return campo && (campo.value !== null && campo.value !== undefined && campo.value !== '') ? campo.value : '-';
+            };
+
+            const cardTemplate = (rotulo, valor) => `
+                <div class="bg-[#24201D] p-3 rounded-lg border border-[#302B27]/50">
+                    <span class="text-[#7A7265] text-xs font-semibold uppercase tracking-wider mb-1 block">${rotulo}</span>
+                    <span class="text-[#D4CFC7] text-base block truncate">${valor}</span>
+                </div>
+            `;
+
+            const valDataHora = getValor("data e hora/date and time");
+
+            let htmlAba1 = `
+                ${cardTemplate("Protocolo", getValor("protocolo"))}
+                <div class="grid grid-cols-2 gap-3">
+                    ${cardTemplate("Nome do Clube", getValor("nome do clube"))}
+                    ${cardTemplate("ID do Clube", getValor("id do clube"))}
+                </div>
+                ${cardTemplate("Moeda", getValor("moeda"))}
+                ${cardTemplate("Liga", getValor("liga"))}
+                ${cardTemplate("Observações", getValor("obs:"))}
+                ${cardTemplate("Material de Divulgação", getValor("material de divulgação"))}
+                ${cardTemplate("Data e Hora", valDataHora)}
+            `;
+
+            let htmlAba2 = `
+                ${cardTemplate("Tipo do Evento", getValor("tipo do evento"))}
+                ${cardTemplate("Modalidade", getValor("modalidade"))}
+            `;
+
+            const valSwap = getValor("swap");
+            if (valSwap.toLowerCase() === 'sim') {
+                htmlAba2 += cardTemplate("SWAP", valSwap);
+            }
+
+            htmlAba2 += `
+                ${cardTemplate("Nome do Evento", getValor("nome do evento"))}
+                ${cardTemplate("Senha", getValor("senha"))}
+                ${cardTemplate("Nº de Jogadores", getValor("nº de jogadores"))}
+                ${cardTemplate("Tempo de Ação", getValor("tempo de ação"))}
+                ${cardTemplate("Premiação Garantida", getValor("premiação garantida"))}
+                ${cardTemplate("Nº de Vagas Garantidas", getValor("nº de vagas garantidas"))}
+                ${cardTemplate("Tickets", getValor("tickets"))}
+                ${cardTemplate("Cálculo de Pagamento", getValor("cálculo de pagamento"))}
+                ${cardTemplate("Buy-in", getValor("buy-in"))}
+                ${cardTemplate("Rebuy", getValor("rebuy:"))}
+                <div class="grid grid-cols-2 gap-3">
+                    ${cardTemplate("Rebuy (Valor)", getValor("rebuy (valor"))}
+                    ${cardTemplate("Stack (Rebuy)", getValor("stack (rebuy)"))}
+                </div>
+                ${cardTemplate("Rebuys (QTD)", getValor("rebuys (qtd)"))}
+                ${cardTemplate("Rebuy Duplo", getValor("rebuy duplo"))}
+                ${cardTemplate("Add-on", getValor("add-on:"))}
+                <div class="grid grid-cols-2 gap-3">
+                    ${cardTemplate("Add-on (Valor)", getValor("add-on (valor"))}
+                    ${cardTemplate("Stack (Add-on)", getValor("stack (add-on)"))}
+                </div>
+                ${cardTemplate("Intervalo Add-on", getValor("intervalo add-on"))}
+                ${cardTemplate("Rake", getValor("rake"))}
+                ${cardTemplate("Blinds (Estrutura)", getValor("blinds (estrutura"))}
+                ${cardTemplate("Stack de Fichas", getValor("stack de fichas"))}
+                ${cardTemplate("Tempo de Blinds", getValor("tempo de blinds"))}
+                ${cardTemplate("Registro Tardio", getValor("registro tardio"))}
+                ${cardTemplate("Early Bird", getValor("early bird"))}
+                ${cardTemplate("Estrutura de % Early Bird", getValor("estrutura/structure de % do early bird"))}
+                ${cardTemplate("Early Bird Level", getValor("early bird level"))}
+                ${cardTemplate("Data e Hora", valDataHora)}
+            `;
+
+            document.getElementById('aba1-conteudo').innerHTML = htmlAba1;
+            document.getElementById('aba2-conteudo').innerHTML = htmlAba2;
+
+            alternarAba('aba1');
             document.getElementById('card-modal').classList.remove('hidden');
-        });
+        })
+        .catch(err => console.error(err));
+}
+
+function alternarAba(aba) {
+    const btnAba1 = document.getElementById('tab-aba1');
+    const btnAba2 = document.getElementById('tab-aba2');
+    const contAba1 = document.getElementById('aba1-conteudo');
+    const contAba2 = document.getElementById('aba2-conteudo');
+
+    const ativa = "px-4 py-2 text-sm font-medium rounded-md bg-[#ECA045] text-black transition-all";
+    const inativa = "px-4 py-2 text-sm font-medium rounded-md text-[#7A7265] hover:text-[#D4CFC7] transition-all";
+
+    if (aba === 'aba1') {
+        btnAba1.className = ativa;
+        btnAba2.className = inativa;
+        contAba1.classList.remove('hidden');
+        contAba2.classList.add('hidden');
+    } else {
+        btnAba2.className = ativa;
+        btnAba1.className = inativa;
+        contAba2.classList.remove('hidden');
+        contAba1.classList.add('hidden');
+    }
 }
 
 function fecharModal() {
     document.getElementById('card-modal').classList.add('hidden');
 }
+
+document.getElementById('tab-aba1').addEventListener('click', () => alternarAba('aba1'));
+document.getElementById('tab-aba2').addEventListener('click', () => alternarAba('aba2'));
 
 document.addEventListener('pointerdown', function(e) {
     const card = e.target.closest('.kanban-card');
