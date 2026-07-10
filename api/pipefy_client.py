@@ -1,6 +1,8 @@
 import json
 import os
+import re
 import requests
+from urllib.parse import urlparse
 
 PIPEFY_API = "https://api.pipefy.com/graphql"
 
@@ -70,9 +72,12 @@ def fetch_card_by_id(card_id):
         card(id: $cardId) {
             id
             title
+            pipe { id }
+            current_phase { id name }
             fields {
                 name
                 value
+                field { id }
             }
         }
     }
@@ -90,15 +95,14 @@ def fetch_card_full(card_id):
     query = """
     query ($cardId: ID!) {
       card(id: $cardId) {
-        id
-        title
-        pipe { id }
-        current_phase { id }
-        fields {
+        id title
+        current_phase {
+          id
           name
-          value
-          field { id }
+          fields { id label }
         }
+        pipe { id organization { id } }
+        fields { name value field { id } }
       }
     }
     """
@@ -222,3 +226,46 @@ def duplicate_card(card_id, pipe_id, phase_id):
         "fieldsAttributes": fields_attributes
     })
     return data.get("data", {}).get("createCard", {})
+
+
+def update_card_field(card_id, field_id, new_value):
+    query = """
+    mutation ($cardId: ID!, $fieldId: ID!, $newValue: [UndefinedInput]) {
+      updateCardField(input: {
+        card_id: $cardId,
+        field_id: $fieldId,
+        new_value: $newValue
+      }) {
+        clientMutationId
+      }
+    }
+    """
+    data = _post(query, variables={
+        "cardId": card_id,
+        "fieldId": field_id,
+        "newValue": new_value
+    })
+    return data.get("data", {}).get("updateCardField", {})
+
+
+def upload_attachment(card_id, file_obj):
+    token = os.environ.get("PIPEFY_TOKEN")
+    if not token:
+        raise ValueError("PIPEFY_TOKEN não definido")
+
+    file_obj.seek(0)
+    files = {
+        'file': (file_obj.filename, file_obj, file_obj.content_type)
+    }
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    response = requests.post(
+        f"https://api.pipefy.com/v1/cards/{card_id}/attachments",
+        files=files,
+        headers=headers
+    )
+    if response.status_code == 200:
+        return True
+    else:
+        raise Exception(f"Erro no envio: {response.status_code} - {response.text}")

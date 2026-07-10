@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify
-from api.pipefy_client import fetch_cards_by_phase, fetch_card_by_id, move_card_to_phase, duplicate_card, clone_card
+from api.pipefy_client import fetch_cards_by_phase, fetch_card_by_id, move_card_to_phase, duplicate_card, clone_card, update_card_field
 from utils.helpers import transform_pipefy_card, sort_cards_by_date
 
 load_dotenv()
@@ -95,6 +95,21 @@ def clonar_card(card_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@app.route("/api/cards/<card_id>/upload", methods=["POST"])
+def api_upload_imagem(card_id):
+    if 'file' not in request.files:
+        return jsonify({"success": False, "error": "Nenhum arquivo enviado"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"success": False, "error": "Arquivo vazio"}), 400
+    try:
+        from api.pipefy_client import upload_attachment
+        upload_attachment(card_id, file)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.route("/api/cards/<card_id>")
 def card_detalhes(card_id):
     try:
@@ -106,12 +121,28 @@ def card_detalhes(card_id):
             "card": {
                 "id": card.get("id"),
                 "titulo": card.get("title", ""),
+                "pipe_id": card.get("pipe", {}).get("id"),
+                "current_phase": {"id": card.get("current_phase", {}).get("id"), "name": card.get("current_phase", {}).get("name")},
                 "campos": [
-                    {"name": f.get("name", ""), "value": f.get("value", "")}
+                    {"name": f.get("name", ""), "value": f.get("value", ""), "field_id": f.get("field", {}).get("id")}
                     for f in card.get("fields", [])
                 ]
             }
         })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/cards/<card_id>/fields", methods=["PUT"])
+def atualizar_campo(card_id):
+    data = request.get_json(silent=True) or {}
+    field_id = data.get("field_id")
+    new_value = data.get("new_value")
+    if not field_id or new_value is None:
+        return jsonify({"success": False, "error": "field_id e new_value são obrigatórios"}), 400
+    try:
+        update_card_field(card_id, field_id, new_value)
+        return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
