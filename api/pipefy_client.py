@@ -1,3 +1,4 @@
+import json
 import os
 import requests
 
@@ -83,6 +84,89 @@ def fetch_card_by_id(card_id):
         raise Exception(f"Erro GraphQL: {data['errors'][0].get('message')}")
         
     return data.get("data", {}).get("card", {})
+
+
+def fetch_card_full(card_id):
+    query = """
+    query ($cardId: ID!) {
+      card(id: $cardId) {
+        id
+        title
+        pipe { id }
+        current_phase { id }
+        fields {
+          name
+          value
+          field { id }
+        }
+      }
+    }
+    """
+    data = _post(query, variables={"cardId": card_id})
+    if "errors" in data:
+        raise Exception(f"Erro GraphQL: {data['errors'][0].get('message')}")
+    return data.get("data", {}).get("card", {})
+
+
+def incrementar_titulo(titulo):
+    import re
+    match = re.search(r'\((\d+)\)$', titulo)
+    if match:
+        num = int(match.group(1)) + 1
+        return re.sub(r'\(\d+\)$', f'({num})', titulo)
+    return f"{titulo} (2)"
+
+
+def clone_card(card_id):
+    card = fetch_card_full(card_id)
+
+    pipe_id = card["pipe"]["id"]
+    phase_id = card["current_phase"]["id"]
+    title = incrementar_titulo(card["title"])
+
+    fields_attributes = []
+    for f in card.get("fields", []):
+        val = f.get("value")
+        field_node = f.get("field")
+
+        if not val or not field_node or not field_node.get("id"):
+            continue
+
+        if isinstance(val, str) and val.strip().startswith("[") and val.strip().endswith("]"):
+            try:
+                parsed_val = json.loads(val)
+                if isinstance(parsed_val, list) and len(parsed_val) > 0 and isinstance(parsed_val[0], str) and "app.pipefy.com/storage" in parsed_val[0]:
+                    continue
+                val = parsed_val
+            except json.JSONDecodeError:
+                pass
+        elif isinstance(val, str) and "app.pipefy.com/storage" in val:
+            continue
+
+        fields_attributes.append({
+            "field_id": field_node["id"],
+            "field_value": val
+        })
+
+    query = """
+    mutation ($pipeId: ID!, $phaseId: ID!, $title: String!, $fieldsAttributes: [FieldValueInput]) {
+        createCard(input: {
+            pipe_id: $pipeId,
+            phase_id: $phaseId,
+            title: $title,
+            fields_attributes: $fieldsAttributes
+        }) {
+            card { id title }
+        }
+    }
+    """
+    data = _post(query, variables={
+        "pipeId": pipe_id,
+        "phaseId": phase_id,
+        "title": title,
+        "fieldsAttributes": fields_attributes
+    })
+    return data.get("data", {}).get("createCard", {})
 
 
 def move_card_to_phase(card_id, phase_id):

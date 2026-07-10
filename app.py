@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify
-from api.pipefy_client import fetch_cards_by_phase, fetch_card_by_id, move_card_to_phase, duplicate_card
+from api.pipefy_client import fetch_cards_by_phase, fetch_card_by_id, move_card_to_phase, duplicate_card, clone_card
 from utils.helpers import transform_pipefy_card, sort_cards_by_date
 
 load_dotenv()
@@ -73,6 +73,22 @@ def duplicar_card():
                 "jogo": "",
                 "data_hora": "",
                 "protocolo": f"#{card_node.get('id', '')}",
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/cards/<card_id>/clone", methods=["POST"])
+def clonar_card(card_id):
+    try:
+        result = clone_card(card_id)
+        card_node = result.get("card", {})
+        return jsonify({
+            "success": True,
+            "card": {
+                "id": card_node.get("id"),
+                "titulo": card_node.get("title", ""),
             }
         })
     except Exception as e:
