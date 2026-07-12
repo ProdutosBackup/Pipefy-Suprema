@@ -950,6 +950,45 @@ document.addEventListener('pointerdown', function(e) {
   </div>
 </div>
 
+<!-- Modal de Criação de Novo Card -->
+<div id="create-card-modal" class="fixed inset-0 z-[100] flex items-center justify-center hidden">
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="fecharCriarModal()"></div>
+  <div class="relative bg-[#1A1816] border border-[#302B27] rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col shadow-2xl">
+    <button onclick="fecharCriarModal()" class="absolute top-4 right-4 text-[#90887D] hover:text-white transition-colors">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+
+    <h2 class="text-lg font-bold text-[#ECA045] mb-5 pr-8 uppercase tracking-wider">Abertura de Card</h2>
+
+    <form id="criar-card-form" class="overflow-y-auto pr-2 custom-scrollbar flex-1">
+      <div id="criar-conteudo" class="space-y-3 text-sm"></div>
+      <div class="sticky bottom-0 pt-4 pb-1 bg-[#1A1816]">
+        <button type="submit" id="btn-criar-card-submit" class="w-full px-4 py-3 rounded-lg bg-[#ECA045] text-black font-bold text-sm hover:brightness-110 transition-all uppercase tracking-wider flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+          Criar Card
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal de Sucesso da Criação -->
+<div id="success-create-modal" class="fixed inset-0 z-[110] flex items-center justify-center hidden">
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative bg-[#1A1816]/90 border border-[#302B27] rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl backdrop-blur-md text-center">
+    <div class="w-16 h-16 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 flex items-center justify-center mx-auto mb-4">
+      <span class="material-symbols-outlined text-3xl">check</span>
+    </div>
+    <p class="text-[#D4CFC7] text-lg font-bold mb-6">Card Criado com Sucesso!</p>
+    <div id="anexo-pos-criacao" class="hidden mb-4">
+      <p class="text-[#7A7265] text-xs mb-2">Deseja anexar um arquivo de divulgação?</p>
+      <input type="file" id="anexo-file-input" class="w-full text-xs text-[#D4CFC7] file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#ECA045] file:text-black hover:file:brightness-110 cursor-pointer">
+      <button id="btn-anexar-arquivo" class="mt-2 w-full px-4 py-2 rounded-lg bg-[#24201D] text-[#D4CFC7] font-semibold text-sm hover:bg-[#302B27] transition-all hidden">ANEXAR</button>
+    </div>
+    <button id="btn-success-criar-sair" class="px-8 py-2.5 rounded-lg bg-[#2A2522] text-[#D4CFC7] font-semibold text-sm hover:bg-[#302B27] transition-all w-full">SAIR</button>
+  </div>
+</div>
+
 <script>
 document.getElementById('btn-clone-sim').addEventListener('click', function() {
     const modal = document.getElementById('clone-modal');
@@ -1034,6 +1073,617 @@ function fecharModalEdicao() {
 }
 
 
+</script>
+
+<script>
+// ===================================================================
+// CONFIGURAÇÃO DOS CAMPOS DO FORMULÁRIO (DATA-DRIVEN)
+// ===================================================================
+const FORM_FIELDS = {
+  aba1: [
+    { id: 'liga',              rotulo: 'LIGA',                           tipo: 'liga',
+      fieldLabel: 'Liga/Union' },
+    { id: 'nome-clube',       rotulo: 'NOME DO CLUBE',                  tipo: 'text',
+      fieldLabel: 'Nome do clube/Nombre del club/Club name' },
+    { id: 'id-clube',          rotulo: 'ID DO CLUBE',                    tipo: 'text',
+      fieldLabel: 'ID do clube/ID del club/Club ID' },
+    { id: 'telefone',          rotulo: 'TELEFONE',                       tipo: 'text',
+      fieldLabel: 'Telefone/Telefono/Cellphone' },
+    { id: 'email-responsavel', rotulo: 'E-MAIL DO RESPONSÁVEL',           tipo: 'text',
+      fieldLabel: 'E-mail do responsável/E-mail del responsable/Responsible person\'s e-mail' },
+    { id: 'email-clube',       rotulo: 'E-MAIL DO CLUBE',                tipo: 'text',
+      fieldLabel: 'E-mail do clube/E-mail del club/Club e-mail' },
+    { id: 'moeda',             rotulo: 'MOEDA',                          tipo: 'select',
+      opcoes: ['Dollar (USD)','Reais (BRL)','Soles (SOL)','Bolivianos (BOL)'],
+      fieldLabel: 'Moeda/Moneda/Currency:' },
+    { id: 'data-hora',         rotulo: 'Data e Hora',                    tipo: 'datetime',
+      fieldLabel: 'Data e hora/Date and time' },
+    { id: 'observacao',        rotulo: 'OBSERVAÇÃO',                     tipo: 'textarea',
+      fieldLabel: 'OBS:' },
+    { id: 'regulamento',       rotulo: 'REGULAMENTO',                    tipo: 'select',
+      opcoes: ['Português','Español','English'],
+      fieldLabel: 'Regulamento/Reglamento/Regulations' },
+    { id: 'material',          rotulo: 'Material de divulgação do evento live', tipo: 'attachment' },
+    { id: 'termos',            rotulo: 'Termos de responsabilidade do solicitante', tipo: 'termos',
+      fieldLabel: 'Termos de responsabilidade do solicitante/Solicitor\'s terms of responsibility' },
+  ],
+  aba2: [
+    { id: 'tipo-evento',      rotulo: 'Tipo de Evento',                 tipo: 'select',
+      opcoes: ['HG','Satélite/Satellite'],
+      fieldLabel: 'Tipo do evento/ Tipo del evento/ Game type' },
+    { id: 'nome-evento',      rotulo: 'Nome do Evento',                 tipo: 'text',
+      fieldLabel: 'Nome do evento/Nombre del evento/Name of the event' },
+    { id: 'senha',            rotulo: 'Senha',                          tipo: 'text',
+      fieldLabel: 'Senha/Contraseña/Password' },
+    { id: 'modalidade',        rotulo: 'Modalidade',                     tipo: 'select',
+      opcoes: ['NLH','PLO4','PLO5','PLO6'],
+      fieldLabel: 'Modalidade/Modalidad/Type:' },
+    { id: 'swap',             rotulo: 'SWAP',                           tipo: 'select',
+      opcoes: ['Sim/Yes', 'Não/No'],
+      fieldLabel: 'SWAP',
+      dependeDe: { campo: 'modalidade', valor: 'NLH' } },
+    { id: 'num-jogadores',    rotulo: 'N de Jogadores',                 tipo: 'select',
+      opcoes: ['2','4','6','7','8','9'],
+      fieldLabel: 'Nº de jogadores/Jugadores/Players:' },
+    { id: 'tickets-valor',    rotulo: 'Tickets (Valor)',                tipo: 'number',
+      largura: 'half',
+      fieldLabel: 'Tickets (valor/price)' },
+    { id: 'vagas-garantidas', rotulo: 'Nº de Vagas Garantidas',         tipo: 'text',
+      largura: 'half',
+      fieldLabel: 'Nº de vagas garantidas/Nº of seats guaranteed' },
+    { id: 'premiacao',        rotulo: 'Premiação Garantida',            tipo: 'calculado',
+      fieldLabel: 'Premiação garantida/Garantizado/Prize pool',
+      readonly: true },
+    { id: 'tempo-acao',       rotulo: 'Tempo de Ação',                  tipo: 'select',
+      opcoes: ['10s','15s','18s','20s','22s','25s','28s','30s','32s','35s'],
+      fieldLabel: 'Tempo de ação/Tiempo de acción/Action time:' },
+    { id: 'buy-in',           rotulo: 'Buy-In',                         tipo: 'calculado',
+      fieldLabel: 'Buy-in:' },
+    { id: 'rebuy',            rotulo: 'Rebuy',                          tipo: 'select',
+      opcoes: ['Sim/Sí/Yes','Não/No'],
+      fieldLabel: 'Rebuy:' },
+    { id: 'rebuy-valor',      rotulo: 'Rebuy (Valor)',                  tipo: 'calculado',
+      fieldLabel: 'Rebuy (valor)', dependeDe: { campo: 'rebuy', valor: 'Sim/Sí/Yes' } },
+    { id: 'rebuy-qtd',        rotulo: 'Rebuy (QTD)',                    tipo: 'select',
+      opcoes: ['1','2','3','4','5','Ilimitado'],
+      fieldLabel: 'Rebuys (qtd)', dependeDe: { campo: 'rebuy', valor: 'Sim/Sí/Yes' } },
+    { id: 'stack-rebuy',      rotulo: 'Stack (Rebuy)',                  tipo: 'text',
+      fieldLabel: 'Stack (rebuy)', dependeDe: { campo: 'rebuy', valor: 'Sim/Sí/Yes' } },
+    { id: 'rebuy-duplo',      rotulo: 'Rebuy Duplo',                    tipo: 'select',
+      opcoes: ['Sim/Yes','Não/No'],
+      fieldLabel: 'Rebuy duplo', dependeDe: { campo: 'rebuy', valor: 'Sim/Sí/Yes' } },
+    { id: 'addon',            rotulo: 'Add-on',                          tipo: 'select',
+      opcoes: ['Sim/Si/Yes','Não/No'],
+      fieldLabel: 'Add-on:' },
+    { id: 'addon-valor',      rotulo: 'Add-on (Valor)',                  tipo: 'calculado',
+      fieldLabel: 'Add-on (Valor/Price)', dependeDe: { campo: 'addon', valor: 'Sim/Si/Yes' } },
+    { id: 'stack-addon',      rotulo: 'Stack (Add-on)',                  tipo: 'text',
+      fieldLabel: 'Stack (add-on)', dependeDe: { campo: 'addon', valor: 'Sim/Si/Yes' } },
+    { id: 'rake',              rotulo: 'Rake',                           tipo: 'select',
+      opcoes: ['10%','12%','15%'],
+      fieldLabel: 'Rake' },
+    { id: 'intervalo-addon',  rotulo: 'Intervalo Add-on',               tipo: 'select',
+      opcoes: ['3 min','5 min','8 min','10 min'],
+      fieldLabel: 'Intervalo add-on' },
+    { id: 'blinds',           rotulo: 'Blinds (Estrutura)',             tipo: 'select',
+      opcoes: ['Regular','Regular - ante off','Turbo','Turbo - ante off','Hyper turbo','Hyper turbo - ante off'],
+      fieldLabel: 'Blinds (estrutura/structure)' },
+    { id: 'stack-fichas',     rotulo: 'Stack de Fichas',                tipo: 'select',
+      opcoes: ['1.000','2.000','3.000','5.000','7.500','10.000','15.000','20.000','30.000','40.000'],
+      fieldLabel: 'Stack de fichas/chips' },
+    { id: 'tempo-blind',      rotulo: 'Tempo de Blind',                 tipo: 'select',
+      opcoes: ['2 min','3 min','4 min','5 min','6 min','7 min','8 min','10 min','12 min','15 min','20 min','30 min','45 min'],
+      fieldLabel: 'Tempo de blinds/Tiempo de blinds/Blinds up' },
+    { id: 'registro-tardio',  rotulo: 'Registro Tardio',                tipo: 'select',
+      opcoes: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'],
+      fieldLabel: 'Registro tardio/Late register (nível/level)' },
+    { id: 'calc-pagamento',   rotulo: 'Cálculo de Pagamento',           tipo: 'select',
+      opcoes: ['Buy-in + Rebuy','Only buy-in'],
+      fieldLabel: 'Cálculo de pagamento/Calculated payout' },
+    { id: 'early-bird',       rotulo: 'Early Bird Level',               tipo: 'select',
+      opcoes: ['Sim/Yes','Não/No'],
+      fieldLabel: 'Early bird' },
+    { id: 'early-bird-estr',  rotulo: 'Estrutura de % Early Bird',      tipo: 'select',
+      opcoes: ['10%','20%','30%','40%','50%'],
+      fieldLabel: 'Estrutura/structure de % do Early Bird:', dependeDe: { campo: 'early-bird', valor: 'Sim/Yes' } },
+    { id: 'early-bird-opcoes',rotulo: 'Early Bird Level (Opções)',      tipo: 'select',
+      opcoes: ['Nivel/level 0 (Antes do inicio)', '1º nivel/level', '2º nivel/level', '3º nivel/level', '4º nivel/level', '5º nivel/level'],
+      fieldLabel: 'Early Bird level', dependeDe: { campo: 'early-bird', valor: 'Sim/Yes' } },
+  ]
+};
+
+// ===================================================================
+// VARIÁVEIS GLOBAIS
+// ===================================================================
+let fieldMapping = {};
+let fieldMappingReady = false;
+let multiplicadorAtual = 1;
+let cardIdCriado = null;
+
+const handcaps = {
+  106: 5, 107: 5, 111: 0.8, 113: 1, 127: 3.5, 128: 5,
+  132: 0.8, 135: 1, 136: 18, 137: 0.8, 145: 0.8, 147: 5,
+  148: 0.8, 149: 1, 150: 10, 163: 1, 164: 1, 166: 0.8,
+  173: 0.8, 202: 1, 204: 0.8, 205: 0.7, 220: 60
+};
+
+const INPUT_CLASSES = 'w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-3 py-2 text-[#D4CFC7] text-sm focus:outline-none focus:border-[#ECA045] transition-colors mt-1';
+
+// ===================================================================
+// RENDERIZAÇÃO DATA-DRIVEN
+// ===================================================================
+function renderFormFields(fields, containerId) {
+  if (typeof fields === 'string') fields = FORM_FIELDS[fields];
+  const container = document.getElementById(containerId);
+  let html = '';
+  let halfBuffer = [];
+
+  fields.forEach(f => {
+    const fHtml = renderSingleField(f);
+    if (f.largura === 'half') {
+      halfBuffer.push(fHtml);
+      if (halfBuffer.length === 2) {
+        html += '<div class="grid grid-cols-2 gap-3">' + halfBuffer.join('') + '</div>';
+        halfBuffer = [];
+      }
+    } else {
+      if (halfBuffer.length === 1) {
+        html += '<div class="grid grid-cols-2 gap-3">' + halfBuffer[0] + '<div></div></div>';
+        halfBuffer = [];
+      }
+      html += fHtml;
+    }
+  });
+  if (halfBuffer.length === 1) {
+    html += '<div class="grid grid-cols-2 gap-3">' + halfBuffer[0] + '<div></div></div>';
+  }
+  container.innerHTML = html;
+}
+
+function renderSingleField(f) {
+  const dep = f.dependeDe ? ' data-depends-on="campo-' + f.dependeDe.campo + '" data-depends-value="' + f.dependeDe.valor + '"' : '';
+  const oculta = f.dependeDe ? ' hidden' : '';
+  const pular = (f.tipo === 'auto' || f.tipo === 'attachment') ? ' data-pular="true"' : '';
+  const campoId = 'campo-' + f.id;
+
+  switch (f.tipo) {
+    case 'auto':
+      return '<div class="border border-[#302B27]/50 bg-[#24201D] p-3 rounded-lg"' + dep + oculta + '>' +
+        '<span class="text-[#7A7265] text-xs font-semibold uppercase tracking-wider mb-1 block">' + f.rotulo + '</span>' +
+        '<p class="text-[#D4CFC7] text-base">Gerado automaticamente</p></div>';
+
+    case 'text':
+      return '<div class="border border-[#302B27]/50 bg-[#24201D] p-3 rounded-lg"' + dep + oculta + '>' +
+        '<label for="' + campoId + '" class="text-[#7A7265] text-xs font-semibold uppercase tracking-wider mb-1 block">' + f.rotulo + '</label>' +
+        '<input id="' + campoId + '" type="text" data-field-label="' + (f.fieldLabel || '') + '"' + pular + ' class="' + INPUT_CLASSES + '"></div>';
+
+    case 'number':
+      return '<div class="border border-[#302B27]/50 bg-[#24201D] p-3 rounded-lg"' + dep + oculta + '>' +
+        '<label for="' + campoId + '" class="text-[#7A7265] text-xs font-semibold uppercase tracking-wider mb-1 block">' + f.rotulo + '</label>' +
+        '<input id="' + campoId + '" type="number" data-field-label="' + (f.fieldLabel || '') + '"' + pular + ' class="' + INPUT_CLASSES + '"></div>';
+
+    case 'textarea':
+      return '<div class="border border-[#302B27]/50 bg-[#24201D] p-3 rounded-lg"' + dep + oculta + '>' +
+        '<label for="' + campoId + '" class="text-[#7A7265] text-xs font-semibold uppercase tracking-wider mb-1 block">' + f.rotulo + '</label>' +
+        '<textarea id="' + campoId + '" data-field-label="' + (f.fieldLabel || '') + '"' + pular + ' rows="2" class="' + INPUT_CLASSES + '"></textarea></div>';
+
+    case 'select': {
+      const opts = '<option value="">-</option>' + (f.opcoes || []).map(o => '<option value="' + o + '">' + (o === '-' ? '—' : o) + '</option>').join('');
+      return '<div class="border border-[#302B27]/50 bg-[#24201D] p-3 rounded-lg"' + dep + oculta + '>' +
+        '<label for="' + campoId + '" class="text-[#7A7265] text-xs font-semibold uppercase tracking-wider mb-1 block">' + f.rotulo + '</label>' +
+        '<select id="' + campoId + '" data-field-label="' + (f.fieldLabel || '') + '"' + pular + ' class="' + INPUT_CLASSES + '" onchange="window.renderConditionalFields()">' + opts + '</select></div>';
+    }
+
+    case 'liga':
+      return '<div class="border border-[#302B27]/50 bg-[#24201D] p-3 rounded-lg"' + dep + oculta + '>' +
+        '<label for="' + campoId + '" class="text-[#7A7265] text-xs font-semibold uppercase tracking-wider mb-1 block">' + f.rotulo + '</label>' +
+        '<select id="' + campoId + '" data-field-label="' + (f.fieldLabel || 'Eventos Privados Suprema* Liga/Union') + '" class="' + INPUT_CLASSES + '" onchange="window.renderConditionalFields()"><option value="">Selecione...</option></select>' +
+        '<div id="liga-multiplicador-info" class="text-[#7A7265] text-xs mt-1 hidden">Multiplicador: <span id="liga-multiplicador-valor">1</span>x</div></div>';
+
+    case 'calculado':
+      return '<div class="border border-[#302B27]/50 bg-[#24201D] p-3 rounded-lg"' + dep + oculta + '>' +
+        '<label for="' + campoId + '" class="text-[#7A7265] text-xs font-semibold uppercase tracking-wider mb-1 block">' + f.rotulo + '</label>' +
+        '<input id="' + campoId + '" type="text" data-field-label="' + (f.fieldLabel || '') + '" data-calculado="true"' + (f.readonly ? ' readonly' : '') + ' class="' + INPUT_CLASSES + '">' +
+        '<div class="text-xs mt-1 text-[#7A7265]">Valor Final: <span id="calc-' + f.id + '" class="text-[#ECA045] font-semibold">---</span></div></div>';
+
+    case 'datetime':
+      return '<div class="border border-[#302B27]/50 bg-[#24201D] p-3 rounded-lg"' + dep + oculta + '>' +
+        '<span class="text-[#7A7265] text-xs font-semibold uppercase tracking-wider mb-1 block">' + f.rotulo + '</span>' +
+        '<input type="hidden" id="' + campoId + '" data-field-label="' + (f.fieldLabel || '') + '">' +
+        '<div class="flex gap-2 mt-1"><input type="date" id="' + campoId + '-date" class="flex-1 ' + INPUT_CLASSES + '">' +
+        '<input type="time" id="' + campoId + '-time" class="flex-1 ' + INPUT_CLASSES + '"></div></div>';
+
+    case 'attachment': {
+      const fileId = campoId + '-file';
+      return '<div class="border border-[#302B27]/50 bg-[#24201D] p-3 rounded-lg"' + dep + oculta + '>' +
+        '<span class="text-[#7A7265] text-xs font-semibold uppercase tracking-wider mb-1 block">' + f.rotulo + '</span>' +
+        '<p class="text-[#90887D] text-xs mt-1">Anexe o arquivo após criar o card.</p>' +
+        '<input type="file" id="' + fileId + '" accept="image/*,.pdf" class="w-full mt-1 text-xs text-[#D4CFC7] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#24201D] file:text-[#D4CFC7] hover:file:bg-[#302B27] cursor-pointer"></div>';
+    }
+
+    case 'checkboxes': {
+      const cbId = campoId + '-todos';
+      const opts = (f.opcoes || []).map((o, i) =>
+        '<label class="flex items-center gap-2 cursor-pointer text-[#D4CFC7] text-sm mt-1">' +
+        '<input type="checkbox" name="' + campoId + '[]" value="' + o + '" class="checkbox-termo accent-[#ECA045]"> ' + o + '</label>'
+      ).join('');
+      return '<div class="border border-[#302B27]/50 bg-[#24201D] p-3 rounded-lg"' + dep + oculta + '>' +
+        '<label class="flex items-center gap-2 cursor-pointer text-[#D4CFC7] text-sm font-semibold mb-1 block">' +
+        '<input type="checkbox" id="' + cbId + '" class="checkbox-marcar-todos accent-[#ECA045]"> ' + f.rotulo + '</label>' +
+        '<div class="ml-4 space-y-1">' + opts + '</div>' +
+        '<input type="hidden" id="' + campoId + '" data-field-label="' + (f.fieldLabel || '') + '"></div>';
+    }
+
+    case 'termos':
+      return '<div class="border border-[#302B27]/50 bg-[#24201D] p-3 rounded-lg"' + dep + oculta + '>' +
+        '<span class="text-[#7A7265] text-xs font-semibold uppercase tracking-wider mb-1 block">' + f.rotulo + '</span>' +
+        '<label class="flex items-center gap-2 cursor-pointer text-[#D4CFC7] text-sm mt-1">' +
+        '<input type="checkbox" id="' + campoId + '" class="termo-aceite accent-[#ECA045]" data-field-label="' + (f.fieldLabel || '') + '" value="Aceito"> SELECIONAR TODOS OS TERMOS</label></div>';
+
+    default:
+      return '';
+  }
+}
+
+// ===================================================================
+// RENDERIZAÇÃO CONDICIONAL
+// ===================================================================
+window.renderConditionalFields = function() {
+  document.querySelectorAll('#criar-card-form [data-depends-on]').forEach(el => {
+    const parentId = el.dataset.dependsOn;
+    const valorEsperado = el.dataset.dependsValue;
+    const parent = document.getElementById(parentId);
+    const parentVal = parent ? parent.value : '';
+    const deveOcultar = parentVal !== valorEsperado;
+
+    el.hidden = deveOcultar;
+    el.classList.toggle('hidden', deveOcultar);
+  });
+}
+
+// ===================================================================
+// LIGA — MULTIPLICADOR
+// ===================================================================
+const LIGAS = [
+  '106 - Suprema', '128 - Suprema 2', '107 - Principal', '111 - Suprema EU',
+  '127 - Suprema Peru', '132 - Suprema Asia', '135 - Suprema USA',
+  '136 - Suprema Mexico', '137 - Suprema Argentina', '145 - Suprema Panama',
+  '147 - Suprema Colombia', '148 - Suprema Venezuela', '149 - Suprema Republica Dominicana',
+  '150 - Suprema Bolivia', '163 - Costa Rica', '164 - Kazakhstan',
+  '202 - Suprema India', '204 - Suprema Uruguai'
+];
+
+function popularLigas() {
+  const select = document.getElementById('campo-liga');
+  if (!select) return;
+  select.innerHTML = '';
+  LIGAS.forEach(nome => {
+    const opt = document.createElement('option');
+    opt.value = nome;
+    opt.textContent = nome;
+    select.appendChild(opt);
+  });
+}
+
+function recalcularCampos() {
+  document.querySelectorAll('[data-calculado="true"]').forEach(input => {
+    const calcId = 'calc-' + input.id.replace('campo-', '');
+    const span = document.getElementById(calcId);
+    if (!span) return;
+    const raw = input.value.trim();
+    if (!raw) { span.textContent = '---'; return; }
+    let num = parseFloat(raw.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.'));
+    if (isNaN(num) || num <= 0) { span.textContent = '---'; return; }
+    span.textContent = (num * multiplicadorAtual).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  });
+}
+
+// ===================================================================
+// DATE/TIME — COMBINA INPUTS EM CAMPO OCULTO
+// ===================================================================
+function setupDateTime(prefix) {
+  const dateEl = document.getElementById(prefix + '-date');
+  const timeEl = document.getElementById(prefix + '-time');
+  const hiddenEl = document.getElementById(prefix);
+  if (!dateEl || !timeEl || !hiddenEl) return;
+
+  function combinar() {
+    if (dateEl.value && timeEl.value) {
+      const [y, m, d] = dateEl.value.split('-');
+      hiddenEl.value = d + '/' + m + '/' + y + ' ' + timeEl.value;
+    } else if (dateEl.value) {
+      const [y, m, d] = dateEl.value.split('-');
+      hiddenEl.value = d + '/' + m + '/' + y;
+    } else {
+      hiddenEl.value = '';
+    }
+  }
+  dateEl.addEventListener('change', combinar);
+  timeEl.addEventListener('change', combinar);
+}
+
+// ===================================================================
+// CHECKBOXES — "MARCAR TODOS"
+// ===================================================================
+function setupCheckboxes() {
+  document.querySelectorAll('.checkbox-marcar-todos').forEach(chk => {
+    chk.addEventListener('change', function() {
+      const container = this.closest('.rounded-lg');
+      if (!container) return;
+      container.querySelectorAll('.checkbox-termo').forEach(cb => cb.checked = this.checked);
+    });
+  });
+}
+
+// ===================================================================
+// MODAL — ABRIR / FECHAR
+// ===================================================================
+function abrirCriarModal(faseId) {
+  cardIdCriado = null;
+  document.getElementById('create-card-modal').dataset.faseId = faseId;
+  document.getElementById('create-card-modal').classList.remove('hidden');
+
+  const allFields = [...FORM_FIELDS.aba1, ...FORM_FIELDS.aba2];
+  renderFormFields(allFields, 'criar-conteudo');
+
+  popularLigas();
+  setupDateTime('campo-data-hora');
+  setupCheckboxes();
+  limparFormCriar();
+  conectarCalculados();
+}
+
+function fecharCriarModal() {
+  document.getElementById('create-card-modal').classList.add('hidden');
+}
+
+function limparFormCriar() {
+  const form = document.getElementById('criar-card-form');
+  form.querySelectorAll('input, textarea').forEach(el => { if (el.type !== 'hidden') el.value = ''; });
+  form.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+  form.querySelectorAll('input[type="hidden"]').forEach(el => el.value = '');
+  form.querySelectorAll('.termo-aceite').forEach(cb => cb.checked = false);
+  multiplicadorAtual = 1;
+  const info = document.getElementById('liga-multiplicador-info');
+  if (info) info.classList.add('hidden');
+  document.querySelectorAll('[id^="calc-"]').forEach(el => el.textContent = '---');
+  renderConditionalFields();
+}
+
+// ===================================================================
+// MA Field ID MAPPING
+// ===================================================================
+function carregarFieldMapping() {
+  fetch('/api/pipe-fields')
+    .then(r => {
+      if (!r.ok) {
+        console.error('[carregarFieldMapping] HTTP', r.status, r.statusText);
+      }
+      return r.json();
+    })
+    .then(data => {
+      if (!data.success) {
+        console.error('[carregarFieldMapping] API retornou erro:', data.error);
+      } else if (!Array.isArray(data.fields) || data.fields.length === 0) {
+        console.warn('[carregarFieldMapping] Nenhum campo retornado pela API.');
+      } else {
+        data.fields.forEach(f => { fieldMapping[f.label] = f.id; });
+      }
+      fieldMappingReady = true;
+    })
+    .catch(err => {
+      console.error('[carregarFieldMapping] Exceção no fetch:', err);
+      fieldMappingReady = true;
+    });
+}
+
+function lookupFieldId(label) {
+  if (!label || !label.trim()) return null;
+  if (fieldMapping[label]) return fieldMapping[label];
+  const norm = s => s.toLowerCase().trim().replace(/\s+/g, ' ');
+  const busca = norm(label);
+  for (const key of Object.keys(fieldMapping)) {
+    if (norm(key) === busca || norm(key).includes(busca) || busca.includes(norm(key))) return fieldMapping[key];
+  }
+  return null;
+}
+
+// ===================================================================
+// EVENTOS — LIGA, CONDICIONAIS, CALCULADOS
+// ===================================================================
+function recalcularPremiacao() {
+  const t = document.getElementById('campo-tickets-valor');
+  const v = document.getElementById('campo-vagas-garantidas');
+  const p = document.getElementById('campo-premiacao');
+  if (!t || !v || !p) return;
+  const tickets = parseFloat(t.value) || 0;
+  const vagas = parseFloat(v.value) || 0;
+  p.value = tickets > 0 && vagas > 0 ? String(tickets * vagas) : '';
+  recalcularCampos();
+}
+
+function conectarCalculados() {
+  document.querySelectorAll('[data-calculado="true"]').forEach(input => {
+    input.addEventListener('input', recalcularCampos);
+  });
+  const ligaEl = document.getElementById('campo-liga');
+  if (ligaEl) {
+    ligaEl.addEventListener('change', function() {
+      const match = this.value.match(/\d+/);
+      const idLiga = match ? parseInt(match[0], 10) : null;
+      multiplicadorAtual = (idLiga && handcaps[idLiga]) ? handcaps[idLiga] : 1;
+      const info = document.getElementById('liga-multiplicador-info');
+      const span = document.getElementById('liga-multiplicador-valor');
+      if (idLiga && handcaps[idLiga]) { span.textContent = multiplicadorAtual; info.classList.remove('hidden'); }
+      else { info.classList.add('hidden'); }
+      recalcularCampos();
+    });
+  }
+  ['campo-tickets-valor', 'campo-vagas-garantidas'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', recalcularPremiacao);
+  });
+}
+
+// ===================================================================
+// GATILHO "ADICIONAR CARD"
+// ===================================================================
+document.querySelectorAll('.adicionar-card-footer').forEach(btn => {
+  btn.addEventListener('click', function() {
+    abrirCriarModal(this.closest('[data-fase-id]').dataset.faseId);
+  });
+});
+
+// ===================================================================
+// MONTAGEM DO PAYLOAD
+// ===================================================================
+function montarPayload() {
+  const fields = [];
+  const labelsNaoEncontrados = [];
+
+  document.querySelectorAll('#criar-card-form [data-field-label]').forEach(el => {
+    if (el.closest('.hidden')) return;
+    if (el.dataset.pular === 'true') return;
+
+    const label = el.dataset.fieldLabel;
+    const fieldId = lookupFieldId(label);
+    if (!fieldId) {
+      labelsNaoEncontrados.push(label);
+      return;
+    }
+
+    let value = '';
+    if (el.type === 'checkbox') {
+      if (!el.checked) return;
+      if (el.classList.contains('termo-aceite')) {
+        value = [
+          "Declaro que as informações prestadas estão corretas, são verdadeiras e assumo a inteira responsabilidade pelas mesmas./I declare that the information provided is correct, true and I take full responsibility for it.",
+          "Declaro que as imagens de divultação do evento estão livres de direitos autorais./I declare that the images used to publish the event are free of copyright."
+        ];
+      } else {
+        value = el.value || 'Sim';
+      }
+    } else if (el.type === 'file') {
+      return;
+    } else if (el.type === 'hidden' && !el.value) {
+      const container = el.closest('.rounded-lg');
+      if (container) {
+        const checks = container.querySelectorAll('.checkbox-termo:checked');
+        if (checks.length > 0) value = Array.from(checks).map(c => c.value).join('; ');
+      }
+    } else {
+      value = el.value.trim();
+    }
+    if (!value || value === '-') return;
+
+    if (el.dataset.calculado === 'true') {
+      let num = parseFloat(value.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.'));
+      if (!isNaN(num) && num > 0) value = String(num * multiplicadorAtual);
+    }
+
+    fields.push({ field_id: fieldId, value: value });
+  });
+
+  if (labelsNaoEncontrados.length > 0) {
+    console.warn('[montarPayload] Labels não encontrados no fieldMapping:', labelsNaoEncontrados);
+  }
+  if (fields.length === 0) {
+    console.warn('[montarPayload] Nenhum campo gerado. fieldMapping keys:', Object.keys(fieldMapping));
+  }
+  return { fields, unmapped: labelsNaoEncontrados };
+}
+
+// ===================================================================
+// SUBMISSÃO
+// ===================================================================
+document.getElementById('criar-card-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (!fieldMappingReady) {
+    alert('Mapeamento de campos ainda não carregado. Tente novamente.');
+    return;
+  }
+  const faseId = document.getElementById('create-card-modal').dataset.faseId;
+  const nomeClube = document.getElementById('campo-nome-clube');
+  const title = (nomeClube ? nomeClube.value.trim() : '') || 'Novo Card';
+  const btn = document.getElementById('btn-criar-card-submit');
+  const { fields, unmapped } = montarPayload();
+  if (fields.length === 0) {
+    if (Object.keys(fieldMapping).length === 0) {
+      alert('ERRO CRÍTICO: O dicionário do Pipefy não carregou. Verifique a conexão ou a API.');
+    } else if (unmapped.length > 0) {
+      alert('ERRO DE MATCH: O Pipefy rejeitou os seguintes campos do formulário: ' + unmapped.join(', '));
+    } else {
+      alert('Preencha pelo menos um campo para criar o card.');
+    }
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">hourglass_top</span> Criando...';
+
+  fetch('/api/criar-card', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phase_id: faseId, title: title, fields: fields })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      cardIdCriado = data.card.id;
+      fecharCriarModal();
+      const anexoDiv = document.getElementById('anexo-pos-criacao');
+      const fileInput = document.getElementById('anexo-file-input');
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        anexoDiv.classList.remove('hidden');
+      }
+      document.getElementById('success-create-modal').classList.remove('hidden');
+    } else {
+      alert('Erro: ' + (data.error || 'desconhecido'));
+    }
+  })
+  .catch(err => alert('Erro de rede: ' + err.message))
+  .finally(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">add</span> Criar Card';
+  });
+});
+
+// ===================================================================
+// UPLOAD PÓS-CRIAÇÃO (ANEXO)
+// ===================================================================
+document.getElementById('anexo-file-input').addEventListener('change', function() {
+  const btn = document.getElementById('btn-anexar-arquivo');
+  btn.classList.toggle('hidden', !this.files || this.files.length === 0);
+});
+
+document.getElementById('btn-anexar-arquivo').addEventListener('click', function() {
+  const fileInput = document.getElementById('anexo-file-input');
+  if (!fileInput.files || !fileInput.files[0] || !cardIdCriado) return;
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  const btn = this;
+  btn.textContent = 'Enviando...';
+  btn.disabled = true;
+  fetch('/api/cards/' + cardIdCriado + '/upload', { method: 'POST', body: formData })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) { btn.textContent = 'ANEXADO'; btn.classList.add('bg-green-500/20'); }
+      else { alert('Erro: ' + (d.error || '')); btn.textContent = 'ANEXAR'; btn.disabled = false; }
+    })
+    .catch(() => { btn.textContent = 'ANEXAR'; btn.disabled = false; });
+});
+
+// ===================================================================
+// SUCESSO — SAIR
+// ===================================================================
+document.getElementById('btn-success-criar-sair').addEventListener('click', function() {
+  window.location.reload();
+});
+
+// ===================================================================
+// INIT
+// ===================================================================
+carregarFieldMapping();
 </script>
 
 </body></html>
