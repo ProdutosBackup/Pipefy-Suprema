@@ -1,5 +1,4 @@
-node/
-venv/
-.streamlit/secrets.toml
-__pycache__/
-.env
+functions/node_modules/
+functions/.env
+.firebase/
+*.log
