@@ -42,6 +42,7 @@ def fetch_cards_by_phase(phase_id):
                 name
                 value
               }
+              labels { id name color }
             }
           }
         }
@@ -204,7 +205,7 @@ def duplicate_card(card_id, pipe_id, phase_id):
     ]
 
     query = """
-    mutation ($pipeId: ID!, $phaseId: ID!, $title: String!, $fieldsAttributes: [FieldInput!]!) {
+    mutation ($pipeId: ID!, $phaseId: ID!, $title: String!, $fieldsAttributes: [FieldValueInput!]!) {
       createCard(input: {
         pipe_id: $pipeId,
         phase_id: $phaseId,
@@ -246,6 +247,79 @@ def update_card_field(card_id, field_id, new_value):
         "newValue": new_value
     })
     return data.get("data", {}).get("updateCardField", {})
+
+
+def fetch_phase_fields(phase_id):
+    query = """
+    query ($phaseId: ID!) {
+      phase(id: $phaseId) {
+        fields {
+          id
+          label
+        }
+      }
+    }
+    """
+    data = _post(query, variables={"phaseId": phase_id})
+    return data.get("data", {}).get("phase", {}).get("fields", [])
+
+
+def fetch_start_form_fields(pipe_id):
+    query = """
+    query ($pipeId: ID!) {
+      pipe(id: $pipeId) {
+        start_form_fields {
+          id
+          label
+        }
+      }
+    }
+    """
+    data = _post(query, variables={"pipeId": pipe_id})
+    return data.get("data", {}).get("pipe", {}).get("start_form_fields", [])
+
+
+def create_card(pipe_id, phase_id, title, fields_attributes, label_ids=None):
+    query = """
+    mutation ($pipeId: ID!, $phaseId: ID!, $title: String!, $fieldsAttributes: [FieldValueInput!]!, $labelIds: [ID!]) {
+      createCard(input: {
+        pipe_id: $pipeId,
+        phase_id: $phaseId,
+        title: $title,
+        fields_attributes: $fieldsAttributes,
+        label_ids: $labelIds
+      }) {
+        card {
+          id
+          title
+          fields { name value }
+        }
+      }
+    }
+    """
+    data = _post(query, variables={
+        "pipeId": pipe_id,
+        "phaseId": phase_id,
+        "title": title,
+        "fieldsAttributes": fields_attributes,
+        "labelIds": label_ids
+    })
+    return data.get("data", {}).get("createCard", {})
+
+
+def update_card_labels(card_id, label_ids):
+    query = """
+    mutation($cardId: ID!, $labelIds: [ID!]) {
+      updateCard(input: {id: $cardId, label_ids: $labelIds}) {
+        card { id }
+      }
+    }
+    """
+    data = _post(query, variables={
+        "cardId": card_id,
+        "labelIds": label_ids
+    })
+    return data.get("data", {}).get("updateCard", {})
 
 
 def upload_attachment(card_id, file_obj):

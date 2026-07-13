@@ -11,6 +11,7 @@ def transform_pipefy_card(edge):
         "jogo": fields.get("Modalidade/Modalidad/Type:", ""),
         "data_hora": fields.get("Data e hora/Date and time", ""),
         "protocolo": f"#{node.get('id', '')}",
+        "labels": node.get("labels", []),
     }
 
 

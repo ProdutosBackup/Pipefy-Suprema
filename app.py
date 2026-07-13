@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify
-from api.pipefy_client import fetch_cards_by_phase, fetch_card_by_id, move_card_to_phase, duplicate_card, clone_card, update_card_field, fetch_phase_fields, create_card, fetch_start_form_fields
+from api.pipefy_client import fetch_cards_by_phase, fetch_card_by_id, move_card_to_phase, duplicate_card, clone_card, update_card_field, fetch_phase_fields, create_card, fetch_start_form_fields, update_card_labels
 from utils.helpers import transform_pipefy_card, sort_cards_by_date
 
 load_dotenv()
@@ -166,7 +166,8 @@ def criar_card():
     phase_id = data.get("phase_id")
     title = data.get("title", "Novo Card")
     fields = data.get("fields", [])
-
+    label_ids = data.get("label_ids", [])
+ 
     if not pipe_id:
         return jsonify({"success": False, "error": "PIPEFY_PIPE_ID não configurado"}), 500
     if not phase_id:
@@ -183,7 +184,7 @@ def criar_card():
             else:
                 final_val = str(val)
             fields_attributes.append({"field_id": f["field_id"], "field_value": final_val})
-        result = create_card(pipe_id, phase_id, title, fields_attributes)
+        result = create_card(pipe_id, phase_id, title, fields_attributes, label_ids)
         card_node = result.get("card", {})
         return jsonify({
             "success": True,
@@ -192,6 +193,20 @@ def criar_card():
                 "titulo": card_node.get("title", ""),
             }
         })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/atualizar-labels", methods=["POST"])
+def atualizar_labels():
+    data = request.get_json(silent=True) or {}
+    card_id = data.get("card_id")
+    label_ids = data.get("label_ids", [])
+    if not card_id:
+        return jsonify({"success": False, "error": "card_id é obrigatório"}), 400
+    try:
+        update_card_labels(card_id, label_ids)
+        return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
