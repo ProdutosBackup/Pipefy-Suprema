@@ -141,8 +141,8 @@
 <div class="flex items-center gap-4">
 <div class="font-display-lg text-display-lg font-bold tracking-tight" style="color: rgb(236, 160, 69); font-size: 28px;">
             Suprema
-        </div>
-</div>
+      </div>
+    </div>
 <nav class="flex items-center gap-10 ml-12"><a class="text-sm font-bold tracking-[0.1em] prompt-gradient-text uppercase" href="#">KANBAN</a><a class="text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">CLUBES</a><a class="text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">USUÁRIOS</a><a class="text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">ANALYTICS</a></nav>
 <div class="flex items-center gap-8">
 <div class="relative flex items-center">
@@ -208,17 +208,28 @@
 {% set labels_validas = card.labels | rejectattr('name', 'equalto', '+ de um vinculado') | list %}
 {% set label_ids = card.labels | map(attribute='id') | list %}
 {% if labels_validas %}
-  <div class="flex flex-wrap gap-2 items-center mt-2 cursor-pointer hover:opacity-75 transition-opacity" title="Editar Responsáveis" onclick='event.preventDefault(); event.stopPropagation(); abrirModalLabels("{{ card.id }}", {{ label_ids | tojson }})'>
+  <div class="flex flex-wrap gap-2 items-center mt-2 cursor-pointer hover:opacity-75 transition-opacity"
+     title="Editar Responsáveis"
+     data-acao="editar-labels"
+     onclick='abrirModalLabels("{{ card.id }}", {{ label_ids | tojson }})'>
   {% for label in labels_validas[:3] %}
     <span class="px-3 py-1 rounded-full text-[11px] font-medium border" style="background-color: {{ label.color }}22; color: {{ label.color }}; border-color: {{ label.color }}55;">{{ label.name }}</span>
   {% endfor %}
   </div>
 {% else %}
-  <button onclick='event.preventDefault(); event.stopPropagation(); abrirModalLabels("{{ card.id }}", [])' class="mt-2 text-[10px] uppercase tracking-wider text-[#7A7265] hover:text-[#ECA045] border border-dashed border-[#302B27] hover:border-[#ECA045] rounded px-2 py-1 flex items-center transition-colors" title="Adicionar Responsável">+ Adicionar Responsável</button>
+  <button data-acao="editar-labels"
+        onclick="abrirModalLabels('{{ card.id }}', [])"
+        class="mt-2 text-[10px] uppercase tracking-wider text-[#7A7265] hover:text-[#ECA045] border border-dashed border-[#302B27] hover:border-[#ECA045] rounded px-2 py-1 flex items-center transition-colors"
+        title="Adicionar Responsável">
+  + Adicionar Responsável
+</button>
 {% endif %}
 </div></div>
 {% endfor %}
 <div class="rounded-xl py-3 px-3 border border-dashed flex justify-center items-center cursor-pointer hover:bg-[rgba(255,255,255,0.02)] transition-colors mb-4 gap-1 adicionar-card-footer" style="border-color: #302B27; color: #90887D; background-color: rgba(255, 255, 255, 0.01);"><span class="material-symbols-outlined text-base">add</span> <span class="font-medium text-sm uppercase">Adicionar Card</span></div>
+<button onclick="abrirModalTemplates()" class="w-full mt-2 py-2 rounded-xl text-xs font-bold tracking-widest text-[#ECA045] bg-transparent border border-[#ECA045]/30 hover:bg-[#ECA045]/10 hover:border-[#ECA045] transition-all flex items-center justify-center">
+  BIBLIOTECA DE EVENTOS
+</button>
 </div>
 </div>
 <!-- Column 2: Análise de Estrutura -->
@@ -271,13 +282,21 @@
 {% set labels_validas = card.labels | rejectattr('name', 'equalto', '+ de um vinculado') | list %}
 {% set label_ids = card.labels | map(attribute='id') | list %}
 {% if labels_validas %}
-  <div class="flex flex-wrap gap-2 items-center mt-2 cursor-pointer hover:opacity-75 transition-opacity" title="Editar Responsáveis" onclick='event.preventDefault(); event.stopPropagation(); abrirModalLabels("{{ card.id }}", {{ label_ids | tojson }})'>
+  <div class="flex flex-wrap gap-2 items-center mt-2 cursor-pointer hover:opacity-75 transition-opacity"
+     title="Editar Responsáveis"
+     data-acao="editar-labels"
+     onclick='abrirModalLabels("{{ card.id }}", {{ label_ids | tojson }})'>
   {% for label in labels_validas[:3] %}
     <span class="px-3 py-1 rounded-full text-[11px] font-medium border" style="background-color: {{ label.color }}22; color: {{ label.color }}; border-color: {{ label.color }}55;">{{ label.name }}</span>
   {% endfor %}
   </div>
 {% else %}
-  <button onclick='event.preventDefault(); event.stopPropagation(); abrirModalLabels("{{ card.id }}", [])' class="mt-2 text-[10px] uppercase tracking-wider text-[#7A7265] hover:text-[#ECA045] border border-dashed border-[#302B27] hover:border-[#ECA045] rounded px-2 py-1 flex items-center transition-colors" title="Adicionar Responsável">+ Adicionar Responsável</button>
+  <button data-acao="editar-labels"
+        onclick="abrirModalLabels('{{ card.id }}', [])"
+        class="mt-2 text-[10px] uppercase tracking-wider text-[#7A7265] hover:text-[#ECA045] border border-dashed border-[#302B27] hover:border-[#ECA045] rounded px-2 py-1 flex items-center transition-colors"
+        title="Adicionar Responsável">
+  + Adicionar Responsável
+</button>
 {% endif %}
 </div></div>
 {% endfor %}
@@ -333,13 +352,21 @@
 {% set labels_validas = card.labels | rejectattr('name', 'equalto', '+ de um vinculado') | list %}
 {% set label_ids = card.labels | map(attribute='id') | list %}
 {% if labels_validas %}
-  <div class="flex flex-wrap gap-2 items-center mt-2 cursor-pointer hover:opacity-75 transition-opacity" title="Editar Responsáveis" onclick='event.preventDefault(); event.stopPropagation(); abrirModalLabels("{{ card.id }}", {{ label_ids | tojson }})'>
+  <div class="flex flex-wrap gap-2 items-center mt-2 cursor-pointer hover:opacity-75 transition-opacity"
+     title="Editar Responsáveis"
+     data-acao="editar-labels"
+     onclick='abrirModalLabels("{{ card.id }}", {{ label_ids | tojson }})'>
   {% for label in labels_validas[:3] %}
     <span class="px-3 py-1 rounded-full text-[11px] font-medium border" style="background-color: {{ label.color }}22; color: {{ label.color }}; border-color: {{ label.color }}55;">{{ label.name }}</span>
   {% endfor %}
   </div>
 {% else %}
-  <button onclick='event.preventDefault(); event.stopPropagation(); abrirModalLabels("{{ card.id }}", [])' class="mt-2 text-[10px] uppercase tracking-wider text-[#7A7265] hover:text-[#ECA045] border border-dashed border-[#302B27] hover:border-[#ECA045] rounded px-2 py-1 flex items-center transition-colors" title="Adicionar Responsável">+ Adicionar Responsável</button>
+  <button data-acao="editar-labels"
+        onclick="abrirModalLabels('{{ card.id }}', [])"
+        class="mt-2 text-[10px] uppercase tracking-wider text-[#7A7265] hover:text-[#ECA045] border border-dashed border-[#302B27] hover:border-[#ECA045] rounded px-2 py-1 flex items-center transition-colors"
+        title="Adicionar Responsável">
+  + Adicionar Responsável
+</button>
 {% endif %}
 </div></div>
 {% endfor %}
@@ -395,13 +422,21 @@
 {% set labels_validas = card.labels | rejectattr('name', 'equalto', '+ de um vinculado') | list %}
 {% set label_ids = card.labels | map(attribute='id') | list %}
 {% if labels_validas %}
-  <div class="flex flex-wrap gap-2 items-center mt-2 cursor-pointer hover:opacity-75 transition-opacity" title="Editar Responsáveis" onclick='event.preventDefault(); event.stopPropagation(); abrirModalLabels("{{ card.id }}", {{ label_ids | tojson }})'>
+  <div class="flex flex-wrap gap-2 items-center mt-2 cursor-pointer hover:opacity-75 transition-opacity"
+     title="Editar Responsáveis"
+     data-acao="editar-labels"
+     onclick='abrirModalLabels("{{ card.id }}", {{ label_ids | tojson }})'>
   {% for label in labels_validas[:3] %}
     <span class="px-3 py-1 rounded-full text-[11px] font-medium border" style="background-color: {{ label.color }}22; color: {{ label.color }}; border-color: {{ label.color }}55;">{{ label.name }}</span>
   {% endfor %}
   </div>
 {% else %}
-  <button onclick='event.preventDefault(); event.stopPropagation(); abrirModalLabels("{{ card.id }}", [])' class="mt-2 text-[10px] uppercase tracking-wider text-[#7A7265] hover:text-[#ECA045] border border-dashed border-[#302B27] hover:border-[#ECA045] rounded px-2 py-1 flex items-center transition-colors" title="Adicionar Responsável">+ Adicionar Responsável</button>
+  <button data-acao="editar-labels"
+        onclick="abrirModalLabels('{{ card.id }}', [])"
+        class="mt-2 text-[10px] uppercase tracking-wider text-[#7A7265] hover:text-[#ECA045] border border-dashed border-[#302B27] hover:border-[#ECA045] rounded px-2 py-1 flex items-center transition-colors"
+        title="Adicionar Responsável">
+  + Adicionar Responsável
+</button>
 {% endif %}
 </div></div>
 {% endfor %}
@@ -457,13 +492,21 @@
 {% set labels_validas = card.labels | rejectattr('name', 'equalto', '+ de um vinculado') | list %}
 {% set label_ids = card.labels | map(attribute='id') | list %}
 {% if labels_validas %}
-  <div class="flex flex-wrap gap-2 items-center mt-2 cursor-pointer hover:opacity-75 transition-opacity" title="Editar Responsáveis" onclick='event.preventDefault(); event.stopPropagation(); abrirModalLabels("{{ card.id }}", {{ label_ids | tojson }})'>
+  <div class="flex flex-wrap gap-2 items-center mt-2 cursor-pointer hover:opacity-75 transition-opacity"
+     title="Editar Responsáveis"
+     data-acao="editar-labels"
+     onclick='abrirModalLabels("{{ card.id }}", {{ label_ids | tojson }})'>
   {% for label in labels_validas[:3] %}
     <span class="px-3 py-1 rounded-full text-[11px] font-medium border" style="background-color: {{ label.color }}22; color: {{ label.color }}; border-color: {{ label.color }}55;">{{ label.name }}</span>
   {% endfor %}
   </div>
 {% else %}
-  <button onclick='event.preventDefault(); event.stopPropagation(); abrirModalLabels("{{ card.id }}", [])' class="mt-2 text-[10px] uppercase tracking-wider text-[#7A7265] hover:text-[#ECA045] border border-dashed border-[#302B27] hover:border-[#ECA045] rounded px-2 py-1 flex items-center transition-colors" title="Adicionar Responsável">+ Adicionar Responsável</button>
+  <button data-acao="editar-labels"
+        onclick="abrirModalLabels('{{ card.id }}', [])"
+        class="mt-2 text-[10px] uppercase tracking-wider text-[#7A7265] hover:text-[#ECA045] border border-dashed border-[#302B27] hover:border-[#ECA045] rounded px-2 py-1 flex items-center transition-colors"
+        title="Adicionar Responsável">
+  + Adicionar Responsável
+</button>
 {% endif %}
 </div></div>
 {% endfor %}
@@ -476,6 +519,19 @@
 let cardIdAtual = null;
 
 const COLUNA_ORDEM = ['326331441','326331442','326331443','326331444','326331445'];
+
+function mostrarLoading(texto) {
+  const loader = document.getElementById('global-loader');
+  const loaderText = document.getElementById('global-loader-text');
+  if (texto) loaderText.textContent = texto;
+  loader.classList.remove('hidden');
+}
+
+function ocultarLoading() {
+  const loader = document.getElementById('global-loader');
+  loader.classList.add('hidden');
+  document.getElementById('global-loader-text').textContent = 'CARREGANDO...';
+}
 
 document.addEventListener('click', function(e) {
   const btn = e.target.closest('[data-acao]');
@@ -514,8 +570,9 @@ document.addEventListener('click', function(e) {
       if (d.success) window.location.reload();
       else alert('Erro: ' + (d.error || 'desconhecido'));
     })
-    .catch(err => alert('Erro de rede: ' + err.message));
-  }
+  .catch(err => alert('Erro de rede: ' + err.message))
+  .finally(() => ocultarLoading());
+}
 });
 </script>
 <script>
@@ -613,17 +670,23 @@ document.getElementById('pesquisa-input').addEventListener('input', function() {
       <div id="aba1-conteudo" class="space-y-3 text-sm"></div>
       <div id="aba2-conteudo" class="space-y-3 text-sm hidden">
           <p class="text-[#7A7265] italic">Em construção...</p>
-      </div>
+    </div>
+    <div class="border-t border-[#302B27]/50 pt-4 mt-4">
+      <button onclick="abrirModalNomearTemplate()" class="w-full py-2 rounded-xl text-xs font-bold tracking-widest text-[#ECA045] bg-transparent border border-[#ECA045]/30 hover:bg-[#ECA045]/10 hover:border-[#ECA045] transition-all flex items-center justify-center uppercase">
+        Salvar Evento
+      </button>
     </div>
   </div>
+</div>
 </div>
 
 <script>
 function abrirModal(cardId) {
-    fetch(`/api/cards/${cardId}`)
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) return;
+  mostrarLoading('ABRINDO CARD...');
+  fetch(`/api/cards/${cardId}`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) return;
 
             cardIdAtual = cardId;
             const card = data.card;
@@ -897,7 +960,10 @@ function abrirModal(cardId) {
             alternarAba('aba1');
             document.getElementById('card-modal').classList.remove('hidden');
         })
-        .catch(err => console.error(err));
+        .catch(err => console.error(err))
+        .finally(() => {
+          ocultarLoading();
+        });
 }
 
 function alternarAba(aba) {
@@ -1026,6 +1092,77 @@ document.addEventListener('pointerdown', function(e) {
       <button id="btn-anexar-arquivo" class="mt-2 w-full px-4 py-2 rounded-lg bg-[#24201D] text-[#D4CFC7] font-semibold text-sm hover:bg-[#302B27] transition-all hidden">ANEXAR</button>
     </div>
     <button id="btn-success-criar-sair" class="px-8 py-2.5 rounded-lg bg-[#2A2522] text-[#D4CFC7] font-semibold text-sm hover:bg-[#302B27] transition-all w-full">SAIR</button>
+  </div>
+</div>
+
+<!-- Modal de Templates -->
+<div id="modal-templates" class="fixed inset-0 z-[120] flex items-center justify-center hidden">
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="fecharModalTemplates()"></div>
+  <div class="relative bg-[#1A1816]/95 border border-[#302B27] rounded-2xl p-6 max-w-3xl w-full mx-4 shadow-2xl backdrop-blur-md">
+    <button onclick="fecharModalTemplates()" class="absolute top-4 right-4 text-[#90887D] hover:text-white">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <h3 class="text-[#ECA045] text-base font-bold tracking-wider mb-6 border-b border-[#302B27]/50 pb-4 uppercase">Biblioteca de Eventos</h3>
+
+    <div class="space-y-4">
+      <div id="cascata-container" class="grid grid-cols-2 gap-4"></div>
+
+      <div id="tabela-templates-container" class="mt-6 mb-2 overflow-y-auto max-h-40 border border-[#302B27] rounded-lg p-3 bg-[#24201D] hidden shadow-inner cursor-default scrollbar-thin scrollbar-thumb-[#302B27] scrollbar-track-transparent">
+        <table class="w-full text-xs text-left">
+          <thead class="text-[#7A7265] uppercase tracking-wider text-[10px] border-b border-[#302B27]">
+            <tr>
+              <th class="pb-2 font-semibold font-mono">Liga</th>
+              <th class="pb-2 font-semibold font-mono">Clube</th>
+              <th class="pb-2 font-semibold font-mono">Evento</th>
+              <th class="pb-2 font-semibold font-mono">Garantido</th>
+              <th class="pb-2"></th>
+            </tr>
+          </thead>
+          <tbody id="tabela-templates-body"></tbody>
+        </table>
+      </div>
+
+      <div class="flex gap-3 mt-4">
+        <button id="btn-carregar-template" disabled onclick="carregarTemplate(_templateSelecionadoId)"
+          class="flex-1 py-3 rounded-lg bg-[#ECA045]/20 text-[#7A7265] font-bold text-sm transition-all disabled:cursor-not-allowed">
+          CARREGAR TEMPLATE
+        </button>
+        <button id="btn-excluir-template" disabled onclick="deletarTemplateSelecionado()"
+          class="px-4 py-3 rounded-lg bg-red-600/20 text-red-500 font-bold text-sm hidden hover:bg-red-600/40 hover:text-red-400 transition-all disabled:cursor-not-allowed">
+          EXCLUIR
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-nomear-template" class="fixed inset-0 z-[130] flex items-center justify-center hidden">
+  <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="fecharModalNomearTemplate()"></div>
+  <div class="relative bg-[#1A1816]/95 border border-[#302B27] rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl backdrop-blur-md">
+    <button onclick="fecharModalNomearTemplate()" class="absolute top-4 right-4 text-[#90887D] hover:text-white">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <h3 class="text-[#ECA045] text-xs font-bold tracking-widest mb-6 border-b border-[#302B27]/50 pb-4 uppercase">Salvar como Modelo</h3>
+
+    <div class="space-y-4">
+      <div>
+        <label class="text-[#7A7265] text-[10px] font-bold uppercase tracking-wider mb-1 block">Nome Clube</label>
+        <input id="input-clube-template" type="text" class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-3 py-2 text-[#D4CFC7] text-sm focus:outline-none focus:border-[#ECA045] transition-colors" placeholder="Inserir informação">
+      </div>
+      <div>
+        <label class="text-[#7A7265] text-[10px] font-bold uppercase tracking-wider mb-1 block">Nome Evento</label>
+        <input id="input-evento-template" type="text" class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-3 py-2 text-[#D4CFC7] text-sm focus:outline-none focus:border-[#ECA045] transition-colors" placeholder="Inserir informação">
+      </div>
+    </div>
+
+    <div class="flex gap-3 mt-6">
+      <button onclick="fecharModalNomearTemplate()" class="flex-1 py-2.5 rounded-lg bg-[#2A2522] text-[#7A7265] text-xs font-bold hover:text-[#D4CFC7] transition-all uppercase tracking-wider">
+        Cancelar
+      </button>
+      <button onclick="confirmarSalvarTemplate()" class="flex-1 py-2.5 rounded-lg bg-[#ECA045] text-black font-bold text-xs hover:brightness-110 transition-all uppercase tracking-wider">
+        Confirmar e Salvar
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1551,11 +1688,368 @@ function fecharModalLabels() {
   cardIdLabelsEditando = null;
 }
 
+let templatesGlobais = [];
+
+function criarDropdown(id, placeholder) {
+  return `
+    <div class="relative" id="${id}">
+      <label class="text-[#7A7265] text-[10px] font-bold uppercase tracking-wider mb-1 block">${placeholder}</label>
+      <button type="button" class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-3 py-2 text-[#D4CFC7] text-sm text-left flex justify-between items-center" onclick="toggleDropdown('${id}')">
+        <span class="dropdown-text">Selecione...</span>
+        <span class="material-symbols-outlined text-[16px]">expand_more</span>
+      </button>
+      <div class="dropdown-menu absolute z-50 w-full mt-1 bg-[#2A2522] border border-[#302B27] rounded-lg shadow-xl hidden">
+        <input type="text" class="dropdown-search w-full bg-transparent border-b border-[#302B27] px-3 py-2 text-[#D4CFC7] text-sm outline-none" placeholder="Buscar...">
+        <ul class="dropdown-list max-h-48 overflow-y-auto"></ul>
+      </div>
+    </div>`;
+}
+
+function toggleDropdown(id) {
+  const menu = document.getElementById(id).querySelector('.dropdown-menu');
+  const estaOculto = menu.classList.contains('hidden');
+  document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+  if (estaOculto) menu.classList.remove('hidden');
+}
+
+function popularDropdown(id, opcoes) {
+  const ul = document.querySelector(`#${id} .dropdown-list`);
+  ul.innerHTML = opcoes.map(o => `
+    <li class="px-3 py-2 text-[#D4CFC7] text-sm hover:bg-[#302B27] cursor-pointer" onclick="selecionarOpcao('${id}','${o}')">${o}</li>
+  `).join('');
+}
+
+function selecionarOpcao(id, valor) {
+  const container = document.getElementById(id);
+  container.querySelector('.dropdown-text').textContent = valor;
+  container.querySelector('.dropdown-menu').classList.add('hidden');
+
+  if (id === 'drop-liga') onLigaChange(valor);
+  else if (id === 'drop-clube') onClubeChange(valor);
+  else if (id === 'drop-evento') onEventoChange(valor);
+  else if (id === 'drop-garantido') onGarantidoChange(valor);
+}
+
+function abrirModalTemplates() {
+  document.getElementById('modal-templates').classList.remove('hidden');
+  _templateSelecionadoId = null;
+  document.getElementById('btn-excluir-template').classList.add('hidden');
+  document.getElementById('cascata-container').innerHTML =
+    criarDropdown('drop-liga', 'Liga') +
+    criarDropdown('drop-clube', 'Clube') +
+    criarDropdown('drop-evento', 'Nome do Evento') +
+    criarDropdown('drop-garantido', 'Garantido');
+
+  fetch('/api/templates')
+    .then(r => r.json())
+    .then(data => {
+      templatesGlobais = data.templates || [];
+      const ligas = [...new Set(templatesGlobais.map(t => t.liga).filter(Boolean))];
+      popularDropdown('drop-liga', ligas);
+      atualizarTabelaTemplates();
+    });
+}
+
+let _templateSelecionadoId = null;
+
+function abrirModalNomearTemplate() {
+  let nomeEventoOriginal = "";
+
+  const elTitulo = document.querySelector('#card-modal h2') || document.querySelector('#modal-detalhes h2');
+  if (elTitulo) nomeEventoOriginal = elTitulo.textContent.replace(/\(NÃO MEXER\)/gi, '').trim();
+
+  document.getElementById('input-clube-template').value = '';
+  document.getElementById('input-evento-template').value = nomeEventoOriginal;
+  document.getElementById('modal-nomear-template').classList.remove('hidden');
+}
+
+function fecharModalNomearTemplate() {
+  document.getElementById('modal-nomear-template').classList.add('hidden');
+}
+
+function confirmarSalvarTemplate() {
+  const clube = document.getElementById('input-clube-template').value.trim();
+  const evento = document.getElementById('input-evento-template').value.trim();
+  
+  if (!clube || !evento) {
+    alert('Por favor, preencha o Nome Clube e o Nome Evento para organizar o modelo.');
+    return;
+  }
+  
+  if (typeof cardIdAtual === 'undefined' || !cardIdAtual) {
+    alert('Erro: ID do card não identificado.');
+    return;
+  }
+
+  fecharModalNomearTemplate();
+  mostrarLoading('SALVANDO TEMPLATE...');
+
+  fetch('/api/salvar-template', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      card_id: cardIdAtual,
+      clube_customizado: clube,
+      evento_customizado: evento
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      alert('Template armazenado com sucesso na Biblioteca!');
+      if (typeof abrirModalTemplates === 'function' && !document.getElementById('modal-templates').classList.contains('hidden')) {
+        abrirModalTemplates();
+      }
+    } else {
+      alert('Erro ao processar modelo: ' + (data.error || 'Erro interno'));
+    }
+  })
+  .catch(err => alert('Erro de comunicação: ' + err.message))
+  .finally(() => ocultarLoading());
+}
+
+function salvarCardComoTemplate() {
+  if (!cardIdAtual) return;
+  fetch('/api/salvar-template', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ card_id: cardIdAtual })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) alert('Estrutura de evento padronizada com sucesso!');
+    else alert('Erro ao processar template: ' + (data.error || 'Erro interno'));
+  })
+  .catch(err => alert('Erro na comunicação com o servidor: ' + err.message));
+}
+
+function fecharModalTemplates() {
+  document.getElementById('modal-templates').classList.add('hidden');
+}
+
+function onLigaChange(liga) {
+  const clubes = [...new Set(templatesGlobais.filter(t => t.liga === liga).map(t => t.clube).filter(Boolean))];
+  popularDropdown('drop-clube', clubes);
+  popularDropdown('drop-evento', []);
+  popularDropdown('drop-garantido', []);
+  limparTexto('drop-clube');
+  limparTexto('drop-evento');
+  limparTexto('drop-garantido');
+  document.getElementById('btn-carregar-template').disabled = true;
+  atualizarTabelaTemplates();
+}
+
+function onClubeChange(clube) {
+  const liga = document.querySelector('#drop-liga .dropdown-text').textContent;
+  const eventos = [...new Set(templatesGlobais.filter(t => t.liga === liga && t.clube === clube).map(t => t.nome_evento).filter(Boolean))];
+  popularDropdown('drop-evento', eventos);
+  popularDropdown('drop-garantido', []);
+  limparTexto('drop-evento');
+  limparTexto('drop-garantido');
+  document.getElementById('btn-carregar-template').disabled = true;
+  atualizarTabelaTemplates();
+}
+
+function onEventoChange(evento) {
+  const liga = document.querySelector('#drop-liga .dropdown-text').textContent;
+  const clube = document.querySelector('#drop-clube .dropdown-text').textContent;
+  const garantidos = [...new Set(templatesGlobais.filter(t => t.liga === liga && t.clube === clube && t.nome_evento === evento).map(t => t.garantido).filter(Boolean))];
+  popularDropdown('drop-garantido', garantidos);
+  limparTexto('drop-garantido');
+  document.getElementById('btn-carregar-template').disabled = true;
+  atualizarTabelaTemplates();
+}
+
+function onGarantidoChange(garantido) {
+  const liga = document.querySelector('#drop-liga .dropdown-text').textContent;
+  const clube = document.querySelector('#drop-clube .dropdown-text').textContent;
+  const evento = document.querySelector('#drop-evento .dropdown-text').textContent;
+
+  const match = templatesGlobais.find(t =>
+    t.liga === liga && t.clube === clube &&
+    t.nome_evento === evento && t.garantido === garantido
+  );
+  _templateSelecionadoId = match ? match.id : null;
+
+  const btnCarregar = document.getElementById('btn-carregar-template');
+  btnCarregar.disabled = false;
+  btnCarregar.classList.remove('bg-[#ECA045]/20', 'text-[#7A7265]');
+  btnCarregar.classList.add('bg-[#ECA045]', 'text-black');
+
+  const btnExcluir = document.getElementById('btn-excluir-template');
+  if (_templateSelecionadoId) {
+    btnExcluir.disabled = false;
+    btnExcluir.classList.remove('hidden');
+  }
+}
+
+function deletarTemplateSelecionado() {
+  if (!_templateSelecionadoId) return;
+  if (!confirm('Excluir este template da biblioteca?')) return;
+
+  fetch('/api/deletar-template', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ template_id: _templateSelecionadoId })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      fecharModalTemplates();
+      setTimeout(() => abrirModalTemplates(), 100);
+    } else {
+      alert('Erro: ' + (data.error || 'desconhecido'));
+    }
+  })
+  .catch(err => alert('Erro de rede: ' + err.message));
+}
+
+function atualizarTabelaTemplates() {
+  const getVal = id => document.querySelector(`#${id} .dropdown-text`).textContent;
+  const liga = getVal('drop-liga');
+  const clube = getVal('drop-clube');
+  const evento = getVal('drop-evento');
+  const garantido = getVal('drop-garantido');
+
+  const container = document.getElementById('tabela-templates-container');
+  const tbody = document.getElementById('tabela-templates-body');
+
+  let filtrados = templatesGlobais;
+  if (liga && liga !== 'Selecione...') filtrados = filtrados.filter(t => t.liga === liga);
+  if (clube && clube !== 'Selecione...') filtrados = filtrados.filter(t => t.clube === clube);
+  if (evento && evento !== 'Selecione...') filtrados = filtrados.filter(t => t.nome_evento === evento);
+  if (garantido && garantido !== 'Selecione...') filtrados = filtrados.filter(t => t.garantido === garantido);
+
+  const temFiltroAtivo = (liga !== 'Selecione...' || clube !== 'Selecione...' || evento !== 'Selecione...' || garantido !== 'Selecione...');
+
+  if (!temFiltroAtivo || filtrados.length === 0) {
+    container.classList.add('hidden');
+    return;
+  }
+
+  tbody.innerHTML = filtrados.map(t => `
+    <tr class="border-b border-[#302B27]/40 hover:bg-[#302B27]/40 transition-colors group">
+      <td class="py-2.5 pr-2 text-[#7A7265] truncate max-w-[80px]" title="${t.liga || '-'}">${t.liga || '-'}</td>
+      <td class="py-2.5 pr-2 text-[#90887D] truncate max-w-[90px]" title="${t.clube || '-'}">${t.clube || '-'}</td>
+      <td class="py-2.5 pr-2 text-[#D4CFC7] font-medium truncate max-w-[120px]" title="${t.nome_evento || '-'}">${t.nome_evento || '-'}</td>
+      <td class="py-2.5 pr-2 text-[#ECA045] font-semibold">${t.garantido || '-'}</td>
+      <td class="py-2.5 text-right w-16">
+        <button onclick="carregarTemplate('${t.id}')" class="text-[#ECA045] text-[10px] font-bold uppercase tracking-wider hover:text-white transition-colors bg-[#302B27]/50 hover:bg-[#ECA045]/20 px-2 py-1 rounded cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100">
+          USAR
+        </button>
+      </td>
+    </tr>
+  `).join('');
+  
+  container.classList.remove('hidden');
+}
+
+function carregarTemplate(templateId) {
+  const template = templatesGlobais.find(t => t.id === templateId);
+  if (!template || !template.campos_completos) {
+    alert('Erro: Template corrompido ou salvo em versão antiga. Exclua e salve novamente.');
+    return;
+  }
+
+  mostrarLoading('PREPARANDO DADOS...');
+
+  const btnAdicionar = document.querySelector('.adicionar-card-footer') || document.querySelector('[onclick^="abrirCriarModal"]');
+  if (btnAdicionar) {
+    btnAdicionar.click();
+  } else if (typeof abrirCriarModal === 'function') {
+    const primeiraFaseId = document.querySelector('.coluna-kanban')?.getAttribute('data-fase-id');
+    if (primeiraFaseId) abrirCriarModal(primeiraFaseId);
+    else fallbackAbrirModal();
+  } else {
+    fallbackAbrirModal();
+  }
+
+  setTimeout(() => {
+    const allFields = [
+      ...(typeof FORM_FIELDS !== 'undefined' && FORM_FIELDS.aba1 ? FORM_FIELDS.aba1 : []),
+      ...(typeof FORM_FIELDS !== 'undefined' && FORM_FIELDS.aba2 ? FORM_FIELDS.aba2 : [])
+    ];
+    
+    const labelParaId = {};
+    allFields.forEach(f => {
+      if (f.fieldLabel) labelParaId[f.fieldLabel] = f.id;
+    });
+
+    Object.entries(template.campos_completos).forEach(([fieldLabel, value]) => {
+      if (!value || value === '') return;
+
+      const lbl = fieldLabel.toLowerCase();
+      
+      if (lbl.includes('data') || lbl.includes('hora') || 
+          lbl.includes('date') || lbl.includes('time') || 
+          lbl.includes('responsável') || lbl.includes('responsable') || 
+          lbl.includes('assignee')) {
+        return;
+      }
+
+      const fieldId = labelParaId[fieldLabel];
+      if (!fieldId) return;
+
+      const input = document.getElementById(`campo-${fieldId}`);
+      if (!input) return;
+
+      if (input.type === 'checkbox') {
+        input.checked = false;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        return;
+      }
+
+      input.value = value;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    if (typeof window.renderConditionalFields === 'function') {
+      window.renderConditionalFields();
+    }
+    
+    fecharModalTemplates();
+    ocultarLoading();
+  }, 400);
+}
+
+function fallbackAbrirModal() {
+  document.getElementById('create-card-modal').classList.remove('hidden');
+  if (typeof renderFormFields === 'function') {
+    const all = [
+      ...(typeof FORM_FIELDS !== 'undefined' && FORM_FIELDS.aba1 ? FORM_FIELDS.aba1 : []),
+      ...(typeof FORM_FIELDS !== 'undefined' && FORM_FIELDS.aba2 ? FORM_FIELDS.aba2 : [])
+    ];
+    renderFormFields(all, 'criar-conteudo');
+  }
+}
+
+function swampt(id) { document.querySelector(`#${id} .dropdown-text`).textContent = 'Selecione...'; }
+const limparTexto = swampt;
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.relative[id^="drop-"]')) {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+  }
+});
+
+document.addEventListener('input', e => {
+  if (e.target.classList.contains('dropdown-search')) {
+    const termo = e.target.value.toLowerCase();
+    const ul = e.target.closest('.dropdown-menu').querySelector('.dropdown-list');
+    ul.querySelectorAll('li').forEach(li => {
+      li.style.display = li.textContent.toLowerCase().includes(termo) ? '' : 'none';
+    });
+  }
+});
+
 function salvarLabels() {
   const checks = document.querySelectorAll('#labels-checkbox-list .label-checkbox:checked');
   const labelIds = Array.from(checks).map(c => c.value);
   const cardId = cardIdLabelsEditando;
   if (!cardId) return;
+
+  mostrarLoading('ATUALIZANDO......');
 
   fetch('/api/atualizar-labels', {
     method: 'POST',
@@ -1591,6 +2085,7 @@ function limparFormCriar() {
 // MA Field ID MAPPING
 // ===================================================================
 function carregarFieldMapping() {
+  mostrarLoading('CARREGANDO QUADRO...');
   fetch('/api/pipe-fields')
     .then(r => {
       if (!r.ok) {
@@ -1609,8 +2104,11 @@ function carregarFieldMapping() {
       fieldMappingReady = true;
     })
     .catch(err => {
-      console.error('[carregarFieldMapping] Exceção no fetch:', err);
+      console.error("Erro ao carregar mapeamento:", err);
       fieldMappingReady = true;
+    })
+    .finally(() => {
+      ocultarLoading();
     });
 }
 
@@ -1755,7 +2253,6 @@ document.getElementById('criar-card-form').addEventListener('submit', function(e
   const faseId = document.getElementById('create-card-modal').dataset.faseId;
   const nomeClube = document.getElementById('campo-nome-clube');
   const title = (nomeClube ? nomeClube.value.trim() : '') || 'Novo Card';
-  const btn = document.getElementById('btn-criar-card-submit');
   const { fields, unmapped } = montarPayload();
   if (fields.length === 0) {
     if (Object.keys(fieldMapping).length === 0) {
@@ -1768,8 +2265,7 @@ document.getElementById('criar-card-form').addEventListener('submit', function(e
     return;
   }
 
-  btn.disabled = true;
-  btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">hourglass_top</span> Criando...';
+  mostrarLoading('CRIANDO CARD...');
 
   fetch('/api/criar-card', {
     method: 'POST',
@@ -1792,10 +2288,7 @@ document.getElementById('criar-card-form').addEventListener('submit', function(e
     }
   })
   .catch(err => alert('Erro de rede: ' + err.message))
-  .finally(() => {
-    btn.disabled = false;
-    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">add</span> Criar Card';
-  });
+  .finally(() => ocultarLoading());
 });
 
 // ===================================================================
@@ -1836,4 +2329,10 @@ document.getElementById('btn-success-criar-sair').addEventListener('click', func
 carregarFieldMapping();
 </script>
 
+<div id="global-loader" class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center hidden transition-opacity duration-300">
+  <div class="flex flex-col items-center gap-4">
+    <div class="w-10 h-10 border-4 border-[#ECA045] border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(234,160,69,0.5)]"></div>
+    <span id="global-loader-text" class="text-[#ECA045] text-xs font-bold tracking-widest uppercase animate-pulse">CARREGANDO...</span>
+  </div>
+</div>
 </body></html>

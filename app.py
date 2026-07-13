@@ -1,10 +1,15 @@
 import os
+import json
+import time
+from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify
 from api.pipefy_client import fetch_cards_by_phase, fetch_card_by_id, move_card_to_phase, duplicate_card, clone_card, update_card_field, fetch_phase_fields, create_card, fetch_start_form_fields, update_card_labels
 from utils.helpers import transform_pipefy_card, sort_cards_by_date
 
 load_dotenv()
+
+TEMPLATES_PATH = os.path.join(os.path.dirname(__file__), "templates.json")
 
 app = Flask(
     __name__,
@@ -193,6 +198,73 @@ def criar_card():
                 "titulo": card_node.get("title", ""),
             }
         })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/templates")
+def listar_templates():
+    if not os.path.exists(TEMPLATES_PATH):
+        return jsonify({"success": True, "templates": []})
+    with open(TEMPLATES_PATH, "r") as f:
+        dados = json.load(f)
+    return jsonify({"success": True, "templates": dados})
+
+
+@app.route("/api/salvar-template", methods=["POST"])
+def salvar_template():
+    data = request.get_json(silent=True) or {}
+    card_id = data.get("card_id")
+    clube_customizado = (data.get("clube_customizado") or "").strip()
+    evento_customizado = (data.get("evento_customizado") or "").strip()
+    
+    if not card_id:
+        return jsonify({"success": False, "error": "card_id é obrigatório"}), 400
+    try:
+        card = fetch_card_by_id(card_id)
+        fields = {f["name"]: f["value"] for f in card.get("fields", [])}
+        
+        template = {
+            "id": f"tmpl_{int(time.time())}",
+            "liga": fields.get("Liga/Union", ""),
+            "clube": clube_customizado or fields.get("Nome do clube/Nombre del club/Club name", ""),
+            "nome_evento": evento_customizado or fields.get("Nome do evento/Nombre del evento/Name of the event", ""),
+            "garantido": fields.get("Premiação garantida/Garantizado/Prize pool", "0"),
+            "card_id_origem": card_id,
+            "criado_em": datetime.utcnow().isoformat(),
+            "campos_completos": fields
+        }
+        
+        templates = []
+        if os.path.exists(TEMPLATES_PATH):
+            with open(TEMPLATES_PATH, "r") as f:
+                templates = json.load(f)
+        
+        templates.append(template)
+        with open(TEMPLATES_PATH, "w") as f:
+            json.dump(templates, f, indent=2)
+        return jsonify({"success": True, "template": template})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/deletar-template", methods=["POST"])
+def deletar_template():
+    data = request.get_json(silent=True) or {}
+    template_id = data.get("template_id")
+    if not template_id:
+        return jsonify({"success": False, "error": "template_id é obrigatório"}), 400
+    try:
+        if not os.path.exists(TEMPLATES_PATH):
+            return jsonify({"success": False, "error": "Nenhum template encontrado"}), 404
+        with open(TEMPLATES_PATH, "r") as f:
+            templates = json.load(f)
+        novos = [t for t in templates if t.get("id") != template_id]
+        if len(novos) == len(templates):
+            return jsonify({"success": False, "error": "Template não encontrado"}), 404
+        with open(TEMPLATES_PATH, "w") as f:
+            json.dump(novos, f, indent=2)
+        return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
