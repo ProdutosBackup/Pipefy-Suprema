@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Cards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#1A1614] text-[#D4CFC7] font-sans h-screen flex items-center justify-center">
+    <div class="bg-[#211C19] border border-[#302B27] p-8 rounded-xl shadow-2xl w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-[#ECA045]">Acesso Restrito</h1>
+            <p class="text-sm text-gray-400 mt-2">Pipefy Produtos</p>
+        </div>
+
+        <form id="form-login" class="space-y-5">
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">E-mail</label>
+                <input type="email" id="email" required class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] focus:outline-none focus:border-[#ECA045] transition-colors">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Senha</label>
+                <input type="password" id="senha" required class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] focus:outline-none focus:border-[#ECA045] transition-colors">
+            </div>
+
+            <div id="erro-msg" class="hidden text-red-500 text-sm text-center bg-red-900/20 border border-red-900/50 p-2 rounded"></div>
+
+            <button type="submit" id="btn-entrar" class="w-full bg-[#ECA045] hover:bg-[#d98d36] text-[#1A1614] font-bold py-3 px-4 rounded-lg transition-colors flex justify-center items-center">
+                <span>ENTRAR</span>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('form-login').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btn-entrar');
+            const erroMsg = document.getElementById('erro-msg');
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+
+            btn.disabled = true;
+            btn.innerHTML = 'Validando...';
+            erroMsg.classList.add('hidden');
+
+            fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, senha })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    window.location.href = '/';
+                } else {
+                    erroMsg.textContent = data.error || 'Falha no login.';
+                    erroMsg.classList.remove('hidden');
+                    btn.disabled = false;
+                    btn.innerHTML = 'ENTRAR';
+                }
+            })
+            .catch(err => {
+                erroMsg.textContent = 'Erro de conexão com o servidor.';
+                erroMsg.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = 'ENTRAR';
+            });
+        });
+    </script>
+</body>
+</html>

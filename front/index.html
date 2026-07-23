@@ -155,8 +155,21 @@
 <span class="material-symbols-outlined absolute left-3 text-[#90887D] pointer-events-none" style="font-size: 18px;">search</span>
 <input type="text" id="pesquisa-input" placeholder="Pesquisar..." class="w-48 bg-[#231F1C] border border-[#302B27] rounded-lg py-2 pl-10 pr-3 text-sm text-[#FAF3E7] placeholder-[#90887D] focus:outline-none focus:border-[#ECA045] transition-colors">
 </div>
-<div class="w-12 h-12 rounded-full overflow-hidden border" style="border-color: #302B27;">
-<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCohVPEXyWkVHhn7H1orWaXX9c5SlJoVNbPdDMTzwfssqbxDpxKsUBj4VUrw4CbY_6IodliBVBOTQP5KC9c0WhMXAwWra_OOpbQalrBaAwfIcryrdhrNKrU2UUGjY_gUNb3i7LAXE7VEPOKh9Dg-4Lddu4aBJsLtjrGTh7DLbcDEhcruvxUb0Qy96JrNnJLiryQOKxdy_q6PcysigR5ExbetE7pRs_VsFWCiMdrzNseso1LHC3vAMEEHVdMkGRoAiHazrKGX-QjftE"/>
+<!-- Widget de Perfil -->
+<div class="relative inline-block text-left ml-auto">
+  <button id="profile-btn" class="flex items-center space-x-3 focus:outline-none bg-[#211C19] hover:bg-[#2A2522] border border-[#302B27] px-3 py-1.5 rounded-full transition-colors">
+    <span id="display-name" class="text-sm font-medium text-[#D4CFC7] max-w-[100px] truncate">Usuário</span>
+    <img id="display-avatar" src="https://ui-avatars.com/api/?name=User&background=2A2522&color=ECA045" alt="Avatar" class="w-8 h-8 rounded-full border border-[#ECA045] object-cover">
+  </button>
+
+  <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-[#211C19] border border-[#302B27] rounded-lg shadow-2xl z-50 overflow-hidden">
+     <button id="btn-edit-profile" class="w-full text-left px-4 py-3 text-sm text-[#D4CFC7] hover:bg-[#2A2522] hover:text-[#ECA045] transition-colors border-b border-[#302B27]">
+       Editar Perfil
+     </button>
+     <a href="/logout" class="block px-4 py-3 text-sm text-red-500 hover:bg-red-500/10 transition-colors font-semibold">
+       Sair do Sistema
+     </a>
+  </div>
 </div>
 </div>
 </header>
@@ -2376,7 +2389,91 @@ document.getElementById('btn-success-criar-sair').addEventListener('click', func
 // INIT
 // ===================================================================
 carregarFieldMapping();
+
+// --- SISTEMA DE PERFIL LOCAL (MULTIUSUÁRIO SEGURO) ---
+const profileBtn = document.getElementById('profile-btn');
+const profileDropdown = document.getElementById('profile-dropdown');
+const btnEditProfile = document.getElementById('btn-edit-profile');
+const modalPerfil = document.getElementById('modal-perfil');
+const btnCancelarPerfil = document.getElementById('btn-cancelar-perfil');
+const btnSalvarPerfil = document.getElementById('btn-salvar-perfil');
+const inputNome = document.getElementById('input-nome-perfil');
+const inputFoto = document.getElementById('input-foto-perfil');
+
+const displayName = document.getElementById('display-name');
+const displayAvatar = document.getElementById('display-avatar');
+
+function carregarPerfil() {
+    const savedName = localStorage.getItem('sys_user_name');
+    const savedPhoto = localStorage.getItem('sys_user_photo');
+    
+    if (savedName) displayName.textContent = savedName;
+    if (savedPhoto) displayAvatar.src = savedPhoto;
+}
+carregarPerfil();
+
+profileBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    profileDropdown.classList.toggle('hidden');
+});
+document.addEventListener('click', () => {
+    profileDropdown.classList.add('hidden');
+});
+
+btnEditProfile.addEventListener('click', (e) => {
+    e.preventDefault();
+    inputNome.value = localStorage.getItem('sys_user_name') || '';
+    modalPerfil.classList.remove('hidden');
+});
+
+btnCancelarPerfil.addEventListener('click', () => {
+    modalPerfil.classList.add('hidden');
+});
+
+btnSalvarPerfil.addEventListener('click', () => {
+    const nome = inputNome.value.trim();
+    if (nome) {
+        localStorage.setItem('sys_user_name', nome);
+    }
+    
+    const file = inputFoto.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            localStorage.setItem('sys_user_photo', e.target.result);
+            carregarPerfil();
+            modalPerfil.classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+    } else {
+        carregarPerfil();
+        modalPerfil.classList.add('hidden');
+    }
+});
 </script>
 
 
+<!-- Modal de Edição de Perfil -->
+<div id="modal-perfil" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+  <div class="bg-[#211C19] border border-[#302B27] rounded-xl w-full max-w-sm p-6 shadow-2xl">
+    <h2 class="text-lg font-bold text-[#ECA045] mb-4">Personalizar Perfil</h2>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Seu Nome</label>
+        <input type="text" id="input-nome-perfil" placeholder="Ex: João Silva" class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-3 py-2 text-[#D4CFC7] focus:outline-none focus:border-[#ECA045]">
+      </div>
+      
+      <div>
+        <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Sua Foto</label>
+        <input type="file" id="input-foto-perfil" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#ECA045] file:text-[#1A1614] hover:file:bg-[#d98d36] cursor-pointer">
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end space-x-3">
+      <button id="btn-cancelar-perfil" class="px-4 py-2 text-sm text-gray-400 hover:text-white">Cancelar</button>
+      <button id="btn-salvar-perfil" class="px-4 py-2 text-sm bg-[#ECA045] hover:bg-[#d98d36] text-[#1A1614] font-bold rounded-lg">Salvar</button>
+    </div>
+  </div>
+</div>
 </body></html>

@@ -3,7 +3,7 @@ import json
 import time
 from datetime import datetime
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from api.pipefy_client import fetch_cards_by_phase, fetch_card_by_id, move_card_to_phase, duplicate_card, clone_card, update_card_field, fetch_phase_fields, create_card, fetch_start_form_fields, update_card_labels
 from utils.helpers import transform_pipefy_card, sort_cards_by_date
 
@@ -18,6 +18,8 @@ app = Flask(
     static_url_path=""
 )
 
+app.secret_key = 'sua_chave_secreta_super_segura_aqui'
+
 COLUNAS = {
     "Caixa de entrada":     {"id": "326331441"},
     "Analise de estrutura": {"id": "326331442"},
@@ -28,6 +30,8 @@ COLUNAS = {
 
 @app.route("/")
 def index():
+    if not session.get('logado'):
+        return redirect(url_for('login_page'))
     colunas = {}
     for slug, cfg in COLUNAS.items():
         try:
@@ -40,6 +44,38 @@ def index():
             print(f"[ERRO] {slug}: {e}")
             colunas[slug] = {"id": cfg["id"], "cards": []}
     return render_template("index.html", colunas=colunas)
+
+@app.route("/login")
+def login_page():
+    return render_template("login.html")
+
+@app.route("/api/auth", methods=["POST"])
+def api_auth():
+    data = request.get_json(silent=True) or {}
+    email = data.get("email", "").strip()
+    senha = data.get("senha", "").strip()
+
+    caminho_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'usuarios.json')
+
+    usuarios_permitidos = {}
+    try:
+        with open(caminho_json, 'r', encoding='utf-8') as f:
+            usuarios_permitidos = json.load(f)
+    except Exception as e:
+        print(f"Erro ao ler usuarios.json: {e}")
+        return jsonify({"success": False, "error": "Erro interno no servidor de autenticação."}), 500
+
+    if email in usuarios_permitidos and str(usuarios_permitidos[email]) == str(senha):
+        session['logado'] = True
+        session['email'] = email
+        return jsonify({"success": True})
+
+    return jsonify({"success": False, "error": "E-mail ou senha incorretos."}), 401
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for('login_page'))
 
 
 @app.route("/api/mover-card", methods=["POST"])
