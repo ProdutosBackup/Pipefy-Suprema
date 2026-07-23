@@ -135,6 +135,12 @@
     </style>
 </head>
 <body class="flex flex-col h-screen w-screen overflow-hidden antialiased">
+<div id="global-loader" class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center hidden transition-opacity duration-300">
+  <div class="flex flex-col items-center gap-4">
+    <div class="w-10 h-10 border-4 border-[#ECA045] border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(234,160,69,0.5)]"></div>
+    <span id="global-loader-text" class="text-[#ECA045] text-xs font-bold tracking-widest uppercase animate-pulse">CARREGANDO...</span>
+  </div>
+</div>
 <!-- Floating Drawer (Hidden by default) -->
 <!-- Floating TopNavBar -->
 <header class="flex justify-between items-center w-full px-12 py-8 max-w-[1920px] mx-auto bg-[#161412] z-30 flex-shrink-0">
@@ -1275,57 +1281,58 @@ function fecharModalEdicao() {
 const FORM_FIELDS = {
   aba1: [
     { id: 'responsavel',       rotulo: 'Responsável',                    tipo: 'select',
+      fieldLabel: 'Responsável',
       opcoes: ['Gabriel', 'Gabi', 'Thalia', 'Kelly', 'Felipe', 'Brian', 'Matheus', 'Victória', 'Lidia', 'Isabela', 'Thainã'] },
     { id: 'liga',              rotulo: 'LIGA',                           tipo: 'liga',
       fieldLabel: 'Liga/Union' },
     { id: 'nome-clube',       rotulo: 'NOME DO CLUBE',                  tipo: 'text',
-      fieldLabel: 'Nome do clube/Nombre del club/Club name' },
+      fieldLabel: 'Nome do clube' },
     { id: 'id-clube',          rotulo: 'ID DO CLUBE',                    tipo: 'text',
-      fieldLabel: 'ID do clube/ID del club/Club ID' },
+      fieldLabel: 'ID do clube' },
     { id: 'telefone',          rotulo: 'TELEFONE',                       tipo: 'text',
-      fieldLabel: 'Telefone/Telefono/Cellphone' },
+      fieldLabel: 'Telefone' },
     { id: 'email-responsavel', rotulo: 'E-MAIL DO RESPONSÁVEL',           tipo: 'text',
-      fieldLabel: 'E-mail do responsável/E-mail del responsable/Responsible person\'s e-mail' },
+      fieldLabel: 'E-mail do responsável' },
     { id: 'email-clube',       rotulo: 'E-MAIL DO CLUBE',                tipo: 'text',
-      fieldLabel: 'E-mail do clube/E-mail del club/Club e-mail' },
+      fieldLabel: 'E-mail do clube' },
     { id: 'moeda',             rotulo: 'MOEDA',                          tipo: 'select',
       opcoes: ['Dollar (USD)','Reais (BRL)','Soles (SOL)','Bolivianos (BOL)'],
-      fieldLabel: 'Moeda/Moneda/Currency:' },
+      fieldLabel: 'Moeda' },
   ],
   aba2: [
     { id: 'titulo-estrutura', rotulo: 'Estrutura do Torneio',           tipo: 'titulo' },
     { id: 'tipo-evento',      rotulo: 'Tipo de Evento',                 tipo: 'select',
       opcoes: ['HG','Satélite/Satellite'],
-      fieldLabel: 'Tipo do evento/ Tipo del evento/ Game type' },
+      fieldLabel: 'Tipo do evento' },
     { id: 'nome-evento',      rotulo: 'Nome do Evento',                 tipo: 'text',
-      fieldLabel: 'Nome do evento/Nombre del evento/Name of the event' },
+      fieldLabel: 'Nome do evento' },
     { id: 'senha',            rotulo: 'Senha',                          tipo: 'text',
-      fieldLabel: 'Senha/Contraseña/Password' },
+      fieldLabel: 'Senha' },
     { id: 'modalidade',        rotulo: 'Modalidade',                     tipo: 'select',
       opcoes: ['NLH','PLO4','PLO5','PLO6'],
-      fieldLabel: 'Modalidade/Modalidad/Type:' },
+      fieldLabel: 'Modalidade' },
     { id: 'swap',             rotulo: 'SWAP',                           tipo: 'select',
       opcoes: ['Sim/Yes', 'Não/No'],
       fieldLabel: 'SWAP',
       dependeDe: { campo: 'modalidade', valor: 'NLH' } },
     { id: 'num-jogadores',    rotulo: 'N de Jogadores',                 tipo: 'select',
       opcoes: ['2','4','6','7','8','9'],
-      fieldLabel: 'Nº de jogadores/Jugadores/Players:' },
+      fieldLabel: 'Nº de jogadores' },
     { id: 'tickets-valor',    rotulo: 'Tickets (Valor)',                tipo: 'number',
       largura: 'half',
       fieldLabel: 'Tickets (valor/price)' },
     { id: 'vagas-garantidas', rotulo: 'Nº de Vagas Garantidas',         tipo: 'text',
       largura: 'half',
-      fieldLabel: 'Nº de vagas garantidas/Nº of seats guaranteed' },
+      fieldLabel: 'Nº de vagas garantidas' },
     { id: 'premiacao',        rotulo: 'Premiação Garantida',            tipo: 'calculado',
-      fieldLabel: 'Premiação garantida/Garantizado/Prize pool',
+      fieldLabel: 'Premiação garantida',
       readonly: true },
     { id: 'tempo-acao',       rotulo: 'Tempo de Ação',                  tipo: 'select',
       opcoes: ['10s','15s','18s','20s','22s','25s','28s','30s','32s','35s'],
-      fieldLabel: 'Tempo de ação/Tiempo de acción/Action time:' },
+      fieldLabel: 'Tempo de ação' },
     { id: 'calc-pagamento',   rotulo: 'Cálculo de Pagamento',           tipo: 'select',
       opcoes: ['Buy-in + Rebuy','Only buy-in'],
-      fieldLabel: 'Cálculo de pagamento/Calculated payout' },
+      fieldLabel: 'Cálculo de pagamento' },
     { id: 'buy-in',           rotulo: 'Buy-In',                         tipo: 'calculado',
       fieldLabel: 'Buy-in:', multiplica: true },
     { id: 'rebuy',            rotulo: 'Rebuy',                          tipo: 'select',
@@ -1362,10 +1369,10 @@ const FORM_FIELDS = {
       fieldLabel: 'Stack de fichas/chips' },
     { id: 'tempo-blind',      rotulo: 'Tempo de Blind',                 tipo: 'select',
       opcoes: ['2 min','3 min','4 min','5 min','6 min','7 min','8 min','10 min','12 min','15 min','20 min','30 min','45 min'],
-      fieldLabel: 'Tempo de blinds/Tiempo de blinds/Blinds up' },
+      fieldLabel: 'Tempo de blinds' },
     { id: 'registro-tardio',  rotulo: 'Registro Tardio',                tipo: 'select',
       opcoes: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'],
-      fieldLabel: 'Registro tardio/Late register (nível/level)' },
+      fieldLabel: 'Registro tardio' },
     { id: 'early-bird',       rotulo: 'Early Bird Level',               tipo: 'select',
       opcoes: ['Sim/Yes','Não/No'],
       fieldLabel: 'Early bird' },
@@ -1377,14 +1384,14 @@ const FORM_FIELDS = {
       fieldLabel: 'Early Bird level', dependeDe: { campo: 'early-bird', valor: 'Sim/Yes' } },
     { id: 'regulamento',       rotulo: 'REGULAMENTO',                    tipo: 'select',
       opcoes: ['Português','Español','English'],
-      fieldLabel: 'Regulamento/Reglamento/Regulations' },
+      fieldLabel: 'Regulamento' },
     { id: 'termos',            rotulo: 'Termos de responsabilidade do solicitante', tipo: 'termos',
-      fieldLabel: 'Termos de responsabilidade do solicitante/Solicitor\'s terms of responsibility' },
+      fieldLabel: 'Termos de responsabilidade do solicitante' },
     { id: 'observacao',        rotulo: 'OBSERVAÇÃO',                     tipo: 'textarea',
       fieldLabel: 'OBS:' },
     { id: 'material',          rotulo: 'Material de divulgação do evento live', tipo: 'attachment' },
     { id: 'data-hora',         rotulo: 'Data e Hora',                    tipo: 'datetime',
-      fieldLabel: 'Data e hora/Date and time' },
+      fieldLabel: 'Data e hora' },
   ]
 };
 
@@ -1503,7 +1510,7 @@ function renderSingleField(f) {
     case 'liga':
       return '<div class="border border-[#302B27]/50 bg-[#24201D] p-3 rounded-lg"' + dep + oculta + '>' +
         '<label for="' + campoId + '" class="text-[#7A7265] text-xs font-semibold uppercase tracking-wider mb-1 block">' + f.rotulo + '</label>' +
-        '<select id="' + campoId + '" data-field-label="' + (f.fieldLabel || 'Eventos Privados Suprema* Liga/Union') + '" class="' + INPUT_CLASSES + '" onchange="window.renderConditionalFields()"><option value="">Selecione...</option></select>' +
+        '<select id="' + campoId + '" data-field-label="' + (f.fieldLabel || 'Liga') + '" class="' + INPUT_CLASSES + '" onchange="window.renderConditionalFields()"><option value="">Selecione...</option></select>' +
         '<div id="liga-multiplicador-info" class="text-[#7A7265] text-xs mt-1 hidden">Multiplicador: <span id="liga-multiplicador-valor">1</span>x</div></div>';
 
     case 'calculado':
@@ -2088,38 +2095,53 @@ function carregarFieldMapping() {
   mostrarLoading('CARREGANDO QUADRO...');
   fetch('/api/pipe-fields')
     .then(r => {
-      if (!r.ok) {
-        console.error('[carregarFieldMapping] HTTP', r.status, r.statusText);
-      }
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.json();
     })
     .then(data => {
-      if (!data.success) {
-        console.error('[carregarFieldMapping] API retornou erro:', data.error);
-      } else if (!Array.isArray(data.fields) || data.fields.length === 0) {
-        console.warn('[carregarFieldMapping] Nenhum campo retornado pela API.');
-      } else {
-        data.fields.forEach(f => { fieldMapping[f.label] = f.id; });
-      }
+      if (!data.success) throw new Error(data.error || 'Erro desconhecido da API');
+      if (!Array.isArray(data.fields) || data.fields.length === 0) throw new Error('Nenhum campo retornado pela API');
+      
+      data.fields.forEach(f => { fieldMapping[f.label] = f.id; });
       fieldMappingReady = true;
     })
     .catch(err => {
-      console.error("Erro ao carregar mapeamento:", err);
-      fieldMappingReady = true;
+      console.error('[carregarFieldMapping] Falha:', err.message);
     })
     .finally(() => {
       ocultarLoading();
     });
 }
 
-function lookupFieldId(label) {
+function buscarIdDoCampo(label) {
   if (!label || !label.trim()) return null;
+
+  // 1 — Match exato
   if (fieldMapping[label]) return fieldMapping[label];
-  const norm = s => s.toLowerCase().trim().replace(/\s+/g, ' ');
+
+  const removerAcentos = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const norm = s => removerAcentos(s).toLowerCase().trim().replace(/\s+/g, ' ');
+
   const busca = norm(label);
+
   for (const key of Object.keys(fieldMapping)) {
-    if (norm(key) === busca || norm(key).includes(busca) || busca.includes(norm(key))) return fieldMapping[key];
+    const keyNorm = norm(key);
+
+    // 2 — Match normalizado exato
+    if (keyNorm === busca) return fieldMapping[key];
+
+    // 3 — Split da chave por "/" e testar cada parte
+    const partes = keyNorm.split(/\s*\/\s*/);
+    for (const parte of partes) {
+      if (parte === busca || parte.includes(busca) || busca.includes(parte)) {
+        return fieldMapping[key];
+      }
+    }
+
+    // 4 — Includes dupla direção (fallback)
+    if (keyNorm.includes(busca) || busca.includes(keyNorm)) return fieldMapping[key];
   }
+
   return null;
 }
 
@@ -2182,7 +2204,7 @@ function montarPayload() {
     if (el.dataset.pular === 'true') return;
 
     const label = el.dataset.fieldLabel;
-    const fieldId = lookupFieldId(label);
+    const fieldId = buscarIdDoCampo(label);
     if (!fieldId) {
       labelsNaoEncontrados.push(label);
       return;
@@ -2211,7 +2233,7 @@ function montarPayload() {
       value = el.value.trim();
     }
 
-    const RESPONSAVEL_FIELD_ID = lookupFieldId('Responsável');
+    const RESPONSAVEL_FIELD_ID = buscarIdDoCampo('Responsável');
     if (fieldId === RESPONSAVEL_FIELD_ID) {
       if (LABEL_IDS[value]) window._labelIds = [LABEL_IDS[value]];
       return;
@@ -2222,7 +2244,15 @@ function montarPayload() {
       value = String(parseFloat(value) * (window.multiplicadorAtual || 1));
     }
 
-    if (!value || value === '-') return;
+    if (!value || value === '-') {
+      const camposObrigatorios = ['E-mail do responsável', 'Responsável'];
+      if (camposObrigatorios.includes(label)) {
+        ocultarLoading();
+        alert(`O campo "${label}" é obrigatório no Pipefy. Por favor, preencha-o antes de criar o card.`);
+        throw new Error(`Validação falhou: Campo obrigatório vazio (${label})`);
+      }
+      return;
+    }
 
     if (el.dataset.calculado === 'true') {
       let num = parseFloat(value.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.'));
@@ -2231,6 +2261,25 @@ function montarPayload() {
 
     fields.push({ field_id: fieldId, value: value });
   });
+
+  // BYPASS FORÇADO: E-mail do Responsável
+  const inputEmailFisico = document.getElementById('campo-email-responsavel');
+  if (inputEmailFisico) {
+    const valorEmail = inputEmailFisico.value.trim();
+    if (!valorEmail) {
+      ocultarLoading();
+      alert('O campo E-mail do Responsável é obrigatório. Por favor, preencha-o.');
+      throw new Error('E-mail do responsável vazio');
+    }
+    const idPipefyEmail = buscarIdDoCampo('E-mail do responsável');
+    if (idPipefyEmail) {
+      const indexExistente = fields.findIndex(f => f.field_id === idPipefyEmail);
+      if (indexExistente > -1) {
+        fields.splice(indexExistente, 1);
+      }
+      fields.push({ field_id: idPipefyEmail, value: valorEmail });
+    }
+  }
 
   if (labelsNaoEncontrados.length > 0) {
     console.warn('[montarPayload] Labels não encontrados no fieldMapping:', labelsNaoEncontrados);
@@ -2329,10 +2378,5 @@ document.getElementById('btn-success-criar-sair').addEventListener('click', func
 carregarFieldMapping();
 </script>
 
-<div id="global-loader" class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center hidden transition-opacity duration-300">
-  <div class="flex flex-col items-center gap-4">
-    <div class="w-10 h-10 border-4 border-[#ECA045] border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(234,160,69,0.5)]"></div>
-    <span id="global-loader-text" class="text-[#ECA045] text-xs font-bold tracking-widest uppercase animate-pulse">CARREGANDO...</span>
-  </div>
-</div>
+
 </body></html>
