@@ -1087,8 +1087,14 @@ document.addEventListener('pointerdown', function(e) {
 
     <form id="criar-card-form" class="overflow-y-auto pr-2 custom-scrollbar flex-1">
       <div id="criar-conteudo" class="space-y-3 text-sm"></div>
-      <div class="sticky bottom-0 pt-4 pb-1 bg-[#1A1816]">
-        <button type="submit" id="btn-criar-card-submit" class="w-full px-4 py-3 rounded-lg bg-[#ECA045] text-black font-bold text-sm hover:brightness-110 transition-all uppercase tracking-wider flex items-center justify-center gap-2">
+      <div class="sticky bottom-0 pt-4 pb-1 bg-[#1A1816] flex gap-3">
+        <button type="button" id="btn-salvar-template"
+                class="w-1/2 px-4 py-3 rounded-lg border border-[#ECA045] text-[#ECA045] bg-transparent font-bold text-sm hover:bg-[#ECA045]/10 transition-all uppercase tracking-wider flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined" style="font-size: 18px;">save</span>
+          Salvar
+        </button>
+        <button type="submit" id="btn-criar-card-submit"
+                class="w-1/2 px-4 py-3 rounded-lg bg-[#ECA045] text-black font-bold text-sm hover:brightness-110 transition-all uppercase tracking-wider flex items-center justify-center gap-2">
           <span class="material-symbols-outlined" style="font-size: 18px;">add</span>
           Criar Card
         </button>
@@ -1141,15 +1147,17 @@ document.addEventListener('pointerdown', function(e) {
         </table>
       </div>
 
-      <div class="flex gap-3 mt-4">
-        <button id="btn-carregar-template" disabled onclick="carregarTemplate(_templateSelecionadoId)"
-          class="flex-1 py-3 rounded-lg bg-[#ECA045]/20 text-[#7A7265] font-bold text-sm transition-all disabled:cursor-not-allowed">
-          CARREGAR TEMPLATE
+      <div id="biblioteca-actions" class="mt-4 flex justify-end gap-3 w-full">
+        <button id="btn-iniciar-exclusao" class="px-4 py-2 text-sm bg-red-950/60 hover:bg-red-900 border border-red-900/50 text-red-400 hover:text-red-300 rounded-lg transition-colors">
+          Excluir
         </button>
-        <button id="btn-excluir-template" disabled onclick="deletarTemplateSelecionado()"
-          class="px-4 py-3 rounded-lg bg-red-600/20 text-red-500 font-bold text-sm hidden hover:bg-red-600/40 hover:text-red-400 transition-all disabled:cursor-not-allowed">
-          EXCLUIR
+        <button id="btn-ver-todos" class="px-4 py-2 text-sm bg-[#2A2522] hover:bg-[#302B27] border border-[#403A35] text-gray-400 hover:text-white rounded-lg transition-colors">
+          Ver Todos
         </button>
+        <div id="grupo-botoes-excluir" class="hidden flex gap-3">
+          <button id="btn-cancelar-exclusao" class="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Cancelar</button>
+          <button id="btn-confirmar-exclusao" class="px-6 py-2 text-sm bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition-colors">CONFIRMAR</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1286,6 +1294,46 @@ function fecharModalEdicao() {
 
 
 </script>
+
+<!-- Modal de Edição de Perfil -->
+<div id="modal-perfil" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+  <div class="bg-[#211C19] border border-[#302B27] rounded-xl w-full max-w-sm p-6 shadow-2xl">
+    <h2 class="text-lg font-bold text-[#ECA045] mb-4">Personalizar Perfil</h2>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Seu Nome</label>
+        <input type="text" id="input-nome-perfil" placeholder="Ex: João Silva" class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-3 py-2 text-[#D4CFC7] focus:outline-none focus:border-[#ECA045]">
+      </div>
+      
+      <div>
+        <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Sua Foto</label>
+        <input type="file" id="input-foto-perfil" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#ECA045] file:text-[#1A1614] hover:file:bg-[#d98d36] cursor-pointer">
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end space-x-3">
+      <button id="btn-cancelar-perfil" class="px-4 py-2 text-sm text-gray-400 hover:text-white">Cancelar</button>
+      <button id="btn-salvar-perfil" class="px-4 py-2 text-sm bg-[#ECA045] hover:bg-[#d98d36] text-[#1A1614] font-bold rounded-lg">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ver Todos -->
+<div id="modal-ver-todos" class="fixed inset-0 z-[130] flex items-center justify-center hidden">
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="bg-modal-ver-todos"></div>
+  <div class="relative bg-[#1A1816]/95 border border-[#302B27] rounded-2xl p-6 max-w-3xl w-full mx-4 shadow-2xl backdrop-blur-md max-h-[80vh] flex flex-col">
+    <button id="btn-fechar-ver-todos" class="absolute top-4 right-4 text-[#90887D] hover:text-[#ECA045] transition-colors">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+    <h3 class="text-[#ECA045] text-base font-bold tracking-wider mb-4 uppercase">Todos os Eventos Salvos</h3>
+    <div class="relative mb-4">
+      <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-[#90887D]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      <input type="text" id="input-busca-ver-todos" placeholder="Buscar por Liga, Clube ou Evento..." class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg pl-10 pr-4 py-3 text-sm text-[#D4CFC7] focus:outline-none focus:border-[#ECA045]">
+    </div>
+    <div id="container-ver-todos" class="overflow-y-auto flex-1 space-y-3 pr-2"></div>
+  </div>
+</div>
 
 <script>
 // ===================================================================
@@ -1626,7 +1674,7 @@ function recalcularCampos() {
     if (!raw) { span.textContent = '---'; return; }
     let num = parseFloat(raw.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.'));
     if (isNaN(num) || num <= 0) { span.textContent = '---'; return; }
-    span.textContent = (num * multiplicadorAtual).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    span.textContent = (num / (window.multiplicadorAtual || 1)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   });
 }
 
@@ -1709,6 +1757,7 @@ function fecharModalLabels() {
 }
 
 let templatesGlobais = [];
+let todos_templates_salvos = [];
 
 function criarDropdown(id, placeholder) {
   return `
@@ -1753,7 +1802,6 @@ function selecionarOpcao(id, valor) {
 function abrirModalTemplates() {
   document.getElementById('modal-templates').classList.remove('hidden');
   _templateSelecionadoId = null;
-  document.getElementById('btn-excluir-template').classList.add('hidden');
   document.getElementById('cascata-container').innerHTML =
     criarDropdown('drop-liga', 'Liga') +
     criarDropdown('drop-clube', 'Clube') +
@@ -1764,6 +1812,7 @@ function abrirModalTemplates() {
     .then(r => r.json())
     .then(data => {
       templatesGlobais = data.templates || [];
+      todos_templates_salvos = data.templates || [];
       const ligas = [...new Set(templatesGlobais.map(t => t.liga).filter(Boolean))];
       popularDropdown('drop-liga', ligas);
       atualizarTabelaTemplates();
@@ -1855,7 +1904,6 @@ function onLigaChange(liga) {
   limparTexto('drop-clube');
   limparTexto('drop-evento');
   limparTexto('drop-garantido');
-  document.getElementById('btn-carregar-template').disabled = true;
   atualizarTabelaTemplates();
 }
 
@@ -1866,7 +1914,6 @@ function onClubeChange(clube) {
   popularDropdown('drop-garantido', []);
   limparTexto('drop-evento');
   limparTexto('drop-garantido');
-  document.getElementById('btn-carregar-template').disabled = true;
   atualizarTabelaTemplates();
 }
 
@@ -1876,7 +1923,6 @@ function onEventoChange(evento) {
   const garantidos = [...new Set(templatesGlobais.filter(t => t.liga === liga && t.clube === clube && t.nome_evento === evento).map(t => t.garantido).filter(Boolean))];
   popularDropdown('drop-garantido', garantidos);
   limparTexto('drop-garantido');
-  document.getElementById('btn-carregar-template').disabled = true;
   atualizarTabelaTemplates();
 }
 
@@ -1890,42 +1936,14 @@ function onGarantidoChange(garantido) {
     t.nome_evento === evento && t.garantido === garantido
   );
   _templateSelecionadoId = match ? match.id : null;
-
-  const btnCarregar = document.getElementById('btn-carregar-template');
-  btnCarregar.disabled = false;
-  btnCarregar.classList.remove('bg-[#ECA045]/20', 'text-[#7A7265]');
-  btnCarregar.classList.add('bg-[#ECA045]', 'text-black');
-
-  const btnExcluir = document.getElementById('btn-excluir-template');
-  if (_templateSelecionadoId) {
-    btnExcluir.disabled = false;
-    btnExcluir.classList.remove('hidden');
-  }
 }
 
-function deletarTemplateSelecionado() {
-  if (!_templateSelecionadoId) return;
-  if (!confirm('Excluir este template da biblioteca?')) return;
-
-  fetch('/api/deletar-template', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ template_id: _templateSelecionadoId })
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.success) {
-      fecharModalTemplates();
-      setTimeout(() => abrirModalTemplates(), 100);
-    } else {
-      alert('Erro: ' + (data.error || 'desconhecido'));
-    }
-  })
-  .catch(err => alert('Erro de rede: ' + err.message));
-}
 
 function atualizarTabelaTemplates() {
-  const getVal = id => document.querySelector(`#${id} .dropdown-text`).textContent;
+  const getVal = id => {
+    const el = document.querySelector(`#${id} .dropdown-text`);
+    return el ? el.textContent : 'Selecione...';
+  };
   const liga = getVal('drop-liga');
   const clube = getVal('drop-clube');
   const evento = getVal('drop-evento');
@@ -1947,9 +1965,12 @@ function atualizarTabelaTemplates() {
     return;
   }
 
-  tbody.innerHTML = filtrados.map(t => `
+  tbody.innerHTML = filtrados.map((t, index) => `
     <tr class="border-b border-[#302B27]/40 hover:bg-[#302B27]/40 transition-colors group">
-      <td class="py-2.5 pr-2 text-[#7A7265] truncate max-w-[80px]" title="${t.liga || '-'}">${t.liga || '-'}</td>
+      <td class="py-2.5 pr-2 flex items-center">
+        <input type="checkbox" class="excluir-checkbox hidden w-4 h-4 accent-red-600 mr-3 cursor-pointer" data-id="${t.id || index}">
+        <span class="text-[#7A7265] truncate max-w-[80px]" title="${t.liga || '-'}">${t.liga || '-'}</span>
+      </td>
       <td class="py-2.5 pr-2 text-[#90887D] truncate max-w-[90px]" title="${t.clube || '-'}">${t.clube || '-'}</td>
       <td class="py-2.5 pr-2 text-[#D4CFC7] font-medium truncate max-w-[120px]" title="${t.nome_evento || '-'}">${t.nome_evento || '-'}</td>
       <td class="py-2.5 pr-2 text-[#ECA045] font-semibold">${t.garantido || '-'}</td>
@@ -2186,7 +2207,8 @@ function conectarCalculados() {
       const span = document.getElementById('liga-multiplicador-valor');
       if (idLiga && handcaps[idLiga]) { span.textContent = multiplicadorAtual; info.classList.remove('hidden'); }
       else { info.classList.add('hidden'); }
-      recalcularCampos();
+      if (typeof recalcularPremiacao === 'function') recalcularPremiacao();
+      if (typeof recalcularCampos === 'function') recalcularCampos();
     });
   }
   ['campo-tickets-valor', 'campo-vagas-garantidas'].forEach(id => {
@@ -2269,11 +2291,56 @@ function montarPayload() {
 
     if (el.dataset.calculado === 'true') {
       let num = parseFloat(value.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.'));
-      if (!isNaN(num) && num > 0) value = String(num * multiplicadorAtual);
+      if (!isNaN(num) && num > 0) value = String(num / (window.multiplicadorAtual || 1));
     }
 
     fields.push({ field_id: fieldId, value: value });
   });
+
+  // BYPASS: Add-on e Rebuy quando "Não/No" — preenche dependentes com valor exato do Pipefy
+  var campoAddon = document.getElementById('campo-addon');
+  var campoRebuy = document.getElementById('campo-rebuy');
+  var valorAddon = campoAddon ? campoAddon.value : '';
+  var valorRebuy = campoRebuy ? campoRebuy.value : '';
+
+  var ehNao = function(val) {
+    var v = val.toUpperCase().trim();
+    return v === 'NÃO' || v === 'NAO' || v === "NÃO/NO" || val === 'Não/No' || val === 'Não';
+  };
+
+  var valorAddonDep = function(label) {
+    var l = label.toLowerCase();
+    if (l.includes('valor') || l.includes('stack')) return '0';
+    return 'Não/No';
+  };
+
+  var valorRebuyDep = function(label) {
+    var l = label.toLowerCase();
+    if (l.includes('valor') || l.includes('stack')) return '0';
+    if (l.includes('qtd') || l === 'rebuys (qtd)') return '1';
+    return 'Não/No';
+  };
+
+  var camposAddon = ['Add-on (Valor/Price)', 'Stack (add-on)'];
+  var camposRebuy = ['Rebuy (valor)', 'Rebuys (qtd)', 'Stack (rebuy)', 'Rebuy duplo'];
+
+  if (valorAddon && ehNao(valorAddon)) {
+    camposAddon.forEach(function(label) {
+      var id = buscarIdDoCampo(label);
+      if (id && !fields.some(function(f) { return f.field_id === id; })) {
+        fields.push({ field_id: id, value: valorAddonDep(label) });
+      }
+    });
+  }
+
+  if (valorRebuy && ehNao(valorRebuy)) {
+    camposRebuy.forEach(function(label) {
+      var id = buscarIdDoCampo(label);
+      if (id && !fields.some(function(f) { return f.field_id === id; })) {
+        fields.push({ field_id: id, value: valorRebuyDep(label) });
+      }
+    });
+  }
 
   // BYPASS FORÇADO: E-mail do Responsável
   const inputEmailFisico = document.getElementById('campo-email-responsavel');
@@ -2306,51 +2373,63 @@ function montarPayload() {
 // ===================================================================
 // SUBMISSÃO
 // ===================================================================
-document.getElementById('criar-card-form').addEventListener('submit', function(e) {
+document.getElementById('criar-card-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  if (!fieldMappingReady) {
-    alert('Mapeamento de campos ainda não carregado. Tente novamente.');
-    return;
-  }
-  const faseId = document.getElementById('create-card-modal').dataset.faseId;
-  const nomeClube = document.getElementById('campo-nome-clube');
-  const title = (nomeClube ? nomeClube.value.trim() : '') || 'Novo Card';
-  const { fields, unmapped } = montarPayload();
-  if (fields.length === 0) {
-    if (Object.keys(fieldMapping).length === 0) {
-      alert('ERRO CRÍTICO: O dicionário do Pipefy não carregou. Verifique a conexão ou a API.');
-    } else if (unmapped.length > 0) {
-      alert('ERRO DE MATCH: O Pipefy rejeitou os seguintes campos do formulário: ' + unmapped.join(', '));
-    } else {
-      alert('Preencha pelo menos um campo para criar o card.');
+
+  try {
+    if (!fieldMappingReady) {
+      alert('Mapeamento de campos ainda não carregado. Tente novamente.');
+      return;
     }
-    return;
-  }
 
-  mostrarLoading('CRIANDO CARD...');
+    mostrarLoading('CRIANDO CARD...');
 
-  fetch('/api/criar-card', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phase_id: faseId, title: title, fields: fields, label_ids: window._labelIds || [] })
-  })
-  .then(r => r.json())
-  .then(data => {
+    var campoLiga = document.getElementById('campo-liga');
+    if (campoLiga) campoLiga.dispatchEvent(new Event('change'));
+
+    if (typeof recalcularPremiacao === 'function') recalcularPremiacao();
+
+    const faseId = document.getElementById('create-card-modal').dataset.faseId;
+    const nomeClube = document.getElementById('campo-nome-clube');
+    const title = (nomeClube ? nomeClube.value.trim() : '') || 'Novo Card';
+    const { fields, unmapped } = montarPayload();
+    if (fields.length === 0) {
+      if (Object.keys(fieldMapping).length === 0) {
+        alert('ERRO CRÍTICO: O dicionário do Pipefy não carregou. Verifique a conexão ou a API.');
+      } else if (unmapped.length > 0) {
+        alert('ERRO DE MATCH: O Pipefy rejeitou os seguintes campos do formulário: ' + unmapped.join(', '));
+      } else {
+        alert('Preencha pelo menos um campo para criar o card.');
+      }
+      return;
+    }
+
+    const response = await fetch('/api/criar-card', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phase_id: faseId, title: title, fields: fields, label_ids: window._labelIds || [] })
+    });
+    const data = await response.json();
+
     if (data.success) {
       cardIdCriado = data.card.id;
-      fecharCriarModal();
+      if (typeof fecharCriarModal === 'function') fecharCriarModal();
       const anexoDiv = document.getElementById('anexo-pos-criacao');
       const fileInput = document.getElementById('anexo-file-input');
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
         anexoDiv.classList.remove('hidden');
       }
-      document.getElementById('success-create-modal').classList.remove('hidden');
+      var successModal = document.getElementById('success-create-modal');
+      if (successModal) successModal.classList.remove('hidden');
     } else {
-      alert('Erro: ' + (data.error || 'desconhecido'));
+      alert('Erro ao criar card: ' + (data.error || 'Erro desconhecido pelo servidor.'));
     }
-  })
-  .catch(err => alert('Erro de rede: ' + err.message))
-  .finally(() => ocultarLoading());
+
+  } catch (error) {
+    console.warn('Validação ou requisição interrompida:', error.message);
+  } finally {
+    if (typeof ocultarLoading === 'function') ocultarLoading();
+  }
 });
 
 // ===================================================================
@@ -2406,74 +2485,263 @@ const displayAvatar = document.getElementById('display-avatar');
 function carregarPerfil() {
     const savedName = localStorage.getItem('sys_user_name');
     const savedPhoto = localStorage.getItem('sys_user_photo');
-    
-    if (savedName) displayName.textContent = savedName;
-    if (savedPhoto) displayAvatar.src = savedPhoto;
+    if (savedName && displayName) displayName.textContent = savedName;
+    if (savedPhoto && displayAvatar) displayAvatar.src = savedPhoto;
 }
-carregarPerfil();
+if (displayName || displayAvatar) carregarPerfil();
 
-profileBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    profileDropdown.classList.toggle('hidden');
-});
-document.addEventListener('click', () => {
-    profileDropdown.classList.add('hidden');
-});
+// Abre/Fecha Dropdown
+if (profileBtn && profileDropdown) {
+    profileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('hidden');
+    });
+}
 
-btnEditProfile.addEventListener('click', (e) => {
-    e.preventDefault();
-    inputNome.value = localStorage.getItem('sys_user_name') || '';
-    modalPerfil.classList.remove('hidden');
-});
+// Fecha Dropdown ao clicar fora
+if (profileDropdown) {
+    document.addEventListener('click', () => {
+        profileDropdown.classList.add('hidden');
+    });
+}
 
-btnCancelarPerfil.addEventListener('click', () => {
-    modalPerfil.classList.add('hidden');
-});
+// Abre Modal
+if (btnEditProfile && modalPerfil && inputNome) {
+    btnEditProfile.addEventListener('click', (e) => {
+        e.preventDefault();
+        inputNome.value = localStorage.getItem('sys_user_name') || '';
+        modalPerfil.classList.remove('hidden');
+    });
+}
 
-btnSalvarPerfil.addEventListener('click', () => {
-    const nome = inputNome.value.trim();
-    if (nome) {
-        localStorage.setItem('sys_user_name', nome);
-    }
-    
-    const file = inputFoto.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            localStorage.setItem('sys_user_photo', e.target.result);
-            carregarPerfil();
-            modalPerfil.classList.add('hidden');
-        };
-        reader.readAsDataURL(file);
-    } else {
-        carregarPerfil();
+// Fecha Modal
+if (btnCancelarPerfil && modalPerfil) {
+    btnCancelarPerfil.addEventListener('click', () => {
         modalPerfil.classList.add('hidden');
+    });
+}
+
+// Salvar Perfil
+if (btnSalvarPerfil) {
+    btnSalvarPerfil.addEventListener('click', () => {
+        if (inputNome) {
+            const nome = inputNome.value.trim();
+            if (nome) localStorage.setItem('sys_user_name', nome);
+        }
+        
+        if (inputFoto && inputFoto.files && inputFoto.files[0]) {
+            const file = inputFoto.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                localStorage.setItem('sys_user_photo', e.target.result);
+                carregarPerfil();
+                if (modalPerfil) modalPerfil.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            carregarPerfil();
+            if (modalPerfil) modalPerfil.classList.add('hidden');
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // === LÓGICA DE EXCLUSÃO ===
+  var btnIniciarExcl = document.getElementById('btn-iniciar-exclusao');
+  var grupoBotoesExcl = document.getElementById('grupo-botoes-excluir');
+  var btnCancelarExcl = document.getElementById('btn-cancelar-exclusao');
+  var btnConfirmarExcl = document.getElementById('btn-confirmar-exclusao');
+  var btnVerTodosAction = document.getElementById('btn-ver-todos');
+
+  function sairModoExclusao() {
+    if (grupoBotoesExcl) grupoBotoesExcl.classList.add('hidden');
+    if (btnIniciarExcl) btnIniciarExcl.classList.remove('hidden');
+    if (btnVerTodosAction) btnVerTodosAction.classList.remove('hidden');
+    document.querySelectorAll('.excluir-checkbox').forEach(function(cb) { cb.classList.add('hidden'); cb.checked = false; });
+  }
+
+  if (btnIniciarExcl) {
+    btnIniciarExcl.addEventListener('click', function() {
+      btnIniciarExcl.classList.add('hidden');
+      if (btnVerTodosAction) btnVerTodosAction.classList.add('hidden');
+      if (grupoBotoesExcl) grupoBotoesExcl.classList.remove('hidden');
+      document.querySelectorAll('.excluir-checkbox').forEach(function(cb) { cb.classList.remove('hidden'); cb.checked = false; });
+    });
+  }
+
+  if (btnCancelarExcl) btnCancelarExcl.addEventListener('click', sairModoExclusao);
+
+  if (btnConfirmarExcl) {
+    btnConfirmarExcl.addEventListener('click', function() {
+      var selecionados = Array.from(document.querySelectorAll('.excluir-checkbox:checked')).map(function(cb) { return cb.dataset.id; });
+      if (selecionados.length === 0) return alert('Selecione ao menos um evento.');
+
+      btnConfirmarExcl.innerHTML = 'Excluindo...';
+      fetch('/api/deletar-template-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ template_ids: selecionados })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        if (res.success) {
+          sairModoExclusao();
+          if (typeof buscarTemplates === 'function') buscarTemplates();
+          else if (typeof fecharModalTemplates === 'function' && typeof abrirModalTemplates === 'function') {
+            fecharModalTemplates();
+            setTimeout(abrirModalTemplates, 100);
+          }
+        } else {
+          alert('Erro: ' + res.error);
+        }
+      })
+      .finally(function() { btnConfirmarExcl.innerHTML = 'CONFIRMAR'; });
+    });
+  }
+
+  // === LÓGICA DO MODAL VER TODOS ===
+  var modalVerTodos = document.getElementById('modal-ver-todos');
+  var inputBusca = document.getElementById('input-busca-ver-todos');
+  var containerVerTodos = document.getElementById('container-ver-todos');
+
+  function fecharModalVerTodos() { if (modalVerTodos) modalVerTodos.classList.add('hidden'); }
+
+  if (btnVerTodosAction) {
+    btnVerTodosAction.addEventListener('click', function() {
+      if (modalVerTodos) modalVerTodos.classList.remove('hidden');
+      if (inputBusca) inputBusca.value = '';
+      renderizarVerTodos('');
+    });
+  }
+
+  var btnFecharVerTodos = document.getElementById('btn-fechar-ver-todos');
+  if (btnFecharVerTodos) btnFecharVerTodos.addEventListener('click', fecharModalVerTodos);
+
+  var bgModalVerTodos = document.getElementById('bg-modal-ver-todos');
+  if (bgModalVerTodos) bgModalVerTodos.addEventListener('click', fecharModalVerTodos);
+
+  function renderizarVerTodos(termo) {
+    if (termo === undefined) termo = '';
+    if (!containerVerTodos) return;
+
+    var templates = window.todos_templates_salvos || [];
+    containerVerTodos.innerHTML = '';
+    var termoLower = termo.toLowerCase();
+
+    var filtrados = templates.filter(function(t) {
+      return ((t.liga || '') + ' ' + (t.clube || '') + ' ' + (t.nome_evento || '')).toLowerCase().includes(termoLower);
+    });
+
+    if (filtrados.length === 0) {
+      containerVerTodos.innerHTML = '<p class="text-gray-500 text-center py-4">Nenhum evento encontrado.</p>';
+      return;
     }
+
+    filtrados.forEach(function(t) {
+      containerVerTodos.innerHTML += '<div class="bg-[#211C19] border border-[#302B27] rounded-lg p-4 flex justify-between items-center hover:border-[#403A35] transition-colors">' +
+        '<div>' +
+          '<p class="text-[#ECA045] font-bold text-sm truncate">' + (t.nome_evento || 'Sem nome') + '</p>' +
+          '<p class="text-xs text-gray-400 mt-1">Liga: ' + (t.liga || '-') + ' | Clube: ' + (t.clube || '-') + '</p>' +
+        '</div>' +
+        '<button onclick="carregarTemplate(\'' + t.id + '\'); document.getElementById(\'modal-ver-todos\').classList.add(\'hidden\');" class="ml-4 px-4 py-2 bg-[#ECA045] hover:bg-[#d98d36] text-[#1A1614] text-xs font-bold rounded-lg transition-colors">USAR</button>' +
+      '</div>';
+    });
+  }
+
+  if (inputBusca) {
+    inputBusca.addEventListener('input', function(e) { renderizarVerTodos(e.target.value); });
+  }
+
+  // === EXTRAÇÃO DEDICADA DE DADOS PARA TEMPLATE (sem validações obrigatórias) ===
+  function extrairDadosTemplate() {
+    const camposExtraidos = [];
+
+    document.querySelectorAll('#criar-card-form [data-field-label]').forEach(el => {
+      if (el.closest('.hidden')) return;
+      if (el.dataset.pular === 'true') return;
+
+      const label = el.dataset.fieldLabel;
+      const nomePipefy = label;
+
+      let valor = '';
+      if (el.type === 'checkbox') {
+        if (!el.checked) return;
+        valor = el.value || 'Sim';
+      } else if (el.type === 'file') {
+        return;
+      } else if (el.type === 'hidden' && !el.value) {
+        const container = el.closest('.rounded-lg');
+        if (container) {
+          const checks = container.querySelectorAll('.checkbox-termo:checked');
+          if (checks.length > 0) valor = Array.from(checks).map(c => c.value).join('; ');
+        }
+      } else {
+        valor = el.value || '';
+      }
+
+      valor = typeof valor === 'string' ? valor.trim() : valor;
+
+      // Ignora campos totalmente vazios, mas não trava o sistema
+      if (valor && valor !== '-') {
+        camposExtraidos.push({
+          field_id: nomePipefy,
+          nome_pipefy: nomePipefy,
+          valor: valor
+        });
+      }
+    });
+
+    return camposExtraidos;
+  }
+
+  // === BOTÃO SALVAR TEMPLATE DO FORMULÁRIO ===
+  var btnSalvarTemplate = document.getElementById('btn-salvar-template');
+  if (btnSalvarTemplate) {
+    btnSalvarTemplate.addEventListener('click', async function() {
+      try {
+        mostrarLoading('SALVANDO TEMPLATE...');
+
+        const fieldsTemplate = extrairDadosTemplate();
+
+        const campoLiga = document.getElementById('campo-liga');
+        const campoClube = document.getElementById('campo-nome-clube');
+
+        // Extrai o texto da liga de forma segura
+        let nomeLiga = '';
+        if (campoLiga && campoLiga.options && campoLiga.selectedIndex >= 0) {
+          nomeLiga = campoLiga.options[campoLiga.selectedIndex].text;
+        }
+
+        const reqBody = {
+          liga: nomeLiga,
+          clube: campoClube ? campoClube.value : '',
+          fields: fieldsTemplate
+        };
+
+        const resp = await fetch('/api/salvar-template-form', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reqBody)
+        });
+
+        const data = await resp.json();
+
+        if (data.success) {
+          if (typeof fecharCriarModal === 'function') fecharCriarModal();
+          if (typeof buscarTemplates === 'function') buscarTemplates();
+          alert('Template salvo com sucesso na sua Biblioteca!');
+        } else {
+          alert('Erro ao salvar template: ' + (data.error || 'Falha no servidor.'));
+        }
+      } catch (e) {
+        console.error("Falha ao salvar template:", e);
+        alert("Ocorreu um erro ao preparar os dados do template. Verifique o console.");
+      } finally {
+        if (typeof ocultarLoading === 'function') ocultarLoading();
+      }
+    });
+  }
 });
 </script>
 
-
-<!-- Modal de Edição de Perfil -->
-<div id="modal-perfil" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
-  <div class="bg-[#211C19] border border-[#302B27] rounded-xl w-full max-w-sm p-6 shadow-2xl">
-    <h2 class="text-lg font-bold text-[#ECA045] mb-4">Personalizar Perfil</h2>
-    
-    <div class="space-y-4">
-      <div>
-        <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Seu Nome</label>
-        <input type="text" id="input-nome-perfil" placeholder="Ex: João Silva" class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-3 py-2 text-[#D4CFC7] focus:outline-none focus:border-[#ECA045]">
-      </div>
-      
-      <div>
-        <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1">Sua Foto</label>
-        <input type="file" id="input-foto-perfil" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#ECA045] file:text-[#1A1614] hover:file:bg-[#d98d36] cursor-pointer">
-      </div>
-    </div>
-
-    <div class="mt-6 flex justify-end space-x-3">
-      <button id="btn-cancelar-perfil" class="px-4 py-2 text-sm text-gray-400 hover:text-white">Cancelar</button>
-      <button id="btn-salvar-perfil" class="px-4 py-2 text-sm bg-[#ECA045] hover:bg-[#d98d36] text-[#1A1614] font-bold rounded-lg">Salvar</button>
-    </div>
-  </div>
-</div>
 </body></html>

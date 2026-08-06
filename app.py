@@ -284,6 +284,91 @@ def salvar_template():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@app.route("/api/salvar-template-form", methods=["POST"])
+def salvar_template_form():
+    try:
+        data = request.get_json(silent=True) or {}
+
+        # 1. Validações Iniciais
+        if not isinstance(data, dict):
+            return jsonify({"success": False, "error": "Payload inválido. Esperado JSON (Dictionary)."}), 400
+
+        liga = data.get("liga", "")
+        clube = data.get("clube", "")
+        fields = data.get("fields", [])
+
+        # 2. Defesa de Tipagem (Evita AttributeError no laço for)
+        if not isinstance(fields, list):
+            return jsonify({"success": False, "error": "Formato de 'fields' inválido. Esperada uma Lista."}), 400
+
+        # 3. Extração Segura de Dados do Template
+        nome_evento = "Novo Evento"
+        garantido = "0"
+
+        for f in fields:
+            if not isinstance(f, dict): continue  # Ignora itens corrompidos dentro do array
+
+            # O front agora envia 'nome_pipefy' e 'valor'
+            nome_pipefy = str(f.get("nome_pipefy", "")).lower()
+            valor_campo = str(f.get("valor", ""))
+
+            if "evento" in nome_pipefy:
+                nome_evento = valor_campo
+            if "premia" in nome_pipefy or "garantido" in nome_pipefy:
+                garantido = valor_campo
+
+        # 4. Montagem Estrutural
+        template = {
+            "id": f"tmpl_{int(time.time())}",
+            "liga": liga,
+            "clube": clube,
+            "nome_evento": nome_evento,
+            "garantido": garantido,
+            "criado_em": datetime.utcnow().isoformat(),
+            "campos_completos": fields
+        }
+
+        # 5. Operação de Leitura/Escrita no JSON com encoding explícito
+        try:
+            with open(TEMPLATES_PATH, "r", encoding="utf-8") as f:
+                templates = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            # Se o arquivo não existir ou estiver corrompido, inicia um novo array vazio
+            templates = []
+
+        templates.append(template)
+
+        with open(TEMPLATES_PATH, "w", encoding="utf-8") as f:
+            json.dump(templates, f, indent=2, ensure_ascii=False)
+
+        return jsonify({"success": True, "template": template}), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()  # Loga o erro real no terminal do Python
+        return jsonify({"success": False, "error": f"Erro interno no servidor: {str(e)}"}), 500
+
+
+@app.route("/api/deletar-template-batch", methods=["POST"])
+def deletar_template_batch():
+    data = request.get_json(silent=True) or {}
+    template_ids = data.get("template_ids", [])
+    if not isinstance(template_ids, list) or not template_ids:
+        return jsonify({"success": False, "error": "template_ids é obrigatório"}), 400
+    try:
+        if not os.path.exists(TEMPLATES_PATH):
+            return jsonify({"success": False, "error": "Nenhum template encontrado"}), 404
+        with open(TEMPLATES_PATH, "r", encoding="utf-8") as f:
+            templates = json.load(f)
+        novos = [t for t in templates if str(t.get("id")) not in map(str, template_ids)]
+        if len(novos) == len(templates):
+            return jsonify({"success": False, "error": "Nenhum template encontrado para exclusão"}), 404
+        with open(TEMPLATES_PATH, "w", encoding="utf-8") as f:
+            json.dump(novos, f, indent=2, ensure_ascii=False)
+        return jsonify({"success": True, "excluidos": len(templates) - len(novos)})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route("/api/deletar-template", methods=["POST"])
 def deletar_template():
     data = request.get_json(silent=True) or {}
