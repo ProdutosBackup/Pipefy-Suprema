@@ -1,15 +1,64 @@
 import os
 import json
-import time
 from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from api.pipefy_client import fetch_cards_by_phase, fetch_card_by_id, move_card_to_phase, duplicate_card, clone_card, update_card_field, fetch_phase_fields, create_card, fetch_start_form_fields, update_card_labels
 from utils.helpers import transform_pipefy_card, sort_cards_by_date
 
+import firebase_admin
+from firebase_admin import credentials, firestore
+
 load_dotenv()
 
 TEMPLATES_PATH = os.path.join(os.path.dirname(__file__), "templates.json")
+LOCAL_CREDENTIALS_PATH = os.path.join(os.path.dirname(__file__), "firebase-key.json")
+
+
+def _get_firebase_credentials():
+    raw = os.environ.get("FIREBASE_CREDENTIALS")
+    if raw:
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            raise RuntimeError("FIREBASE_CREDENTIALS está presente mas é um JSON inválido.")
+    if os.path.exists(LOCAL_CREDENTIALS_PATH):
+        with open(LOCAL_CREDENTIALS_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    raise RuntimeError(
+        "Credenciais do Firebase ausentes. Defina a env var FIREBASE_CREDENTIALS "
+        "ou crie o arquivo local firebase-key.json."
+    )
+
+
+_credentials = _get_firebase_credentials()
+firebase_admin.initialize_app(credentials.Certificate(_credentials))
+db = firestore.client()
+TEMPLATES_COLL = db.collection("templates_pipefy")
+TORNEIOS_COLL = db.collection("torneios_ids")
+
+
+def migrar_templates_file():
+    if not os.path.exists(TEMPLATES_PATH):
+        return
+    if not TEMPLATES_COLL.limit(1).get():
+        try:
+            with open(TEMPLATES_PATH, "r", encoding="utf-8") as f:
+                templates = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return
+        if not isinstance(templates, list):
+            return
+        for i in range(0, len(templates), 500):
+            batch = db.batch()
+            for t in templates[i:i + 500]:
+                batch.set(TEMPLATES_COLL.document(), t)
+            batch.commit()
+    os.rename(TEMPLATES_PATH, TEMPLATES_PATH + ".migrado")
+    print("[MIGRAÇÃO] templates.json transferido para Firestore (templates_pipefy).")
+
+
+#migrar_templates_file()
 
 app = Flask(
     __name__,
@@ -240,11 +289,9 @@ def criar_card():
 
 @app.route("/api/templates")
 def listar_templates():
-    if not os.path.exists(TEMPLATES_PATH):
-        return jsonify({"success": True, "templates": []})
-    with open(TEMPLATES_PATH, "r") as f:
-        dados = json.load(f)
-    return jsonify({"success": True, "templates": dados})
+    docs = TEMPLATES_COLL.order_by("__name__").stream()
+    templates = [d.to_dict() for d in docs]
+    return jsonify({"success": True, "templates": templates})
 
 
 @app.route("/api/salvar-template", methods=["POST"])
@@ -261,7 +308,6 @@ def salvar_template():
         fields = {f["name"]: f["value"] for f in card.get("fields", [])}
         
         template = {
-            "id": f"tmpl_{int(time.time())}",
             "liga": fields.get("Liga/Union", ""),
             "clube": clube_customizado or fields.get("Nome do clube/Nombre del club/Club name", ""),
             "nome_evento": evento_customizado or fields.get("Nome do evento/Nombre del evento/Name of the event", ""),
@@ -270,15 +316,10 @@ def salvar_template():
             "criado_em": datetime.utcnow().isoformat(),
             "campos_completos": fields
         }
-        
-        templates = []
-        if os.path.exists(TEMPLATES_PATH):
-            with open(TEMPLATES_PATH, "r") as f:
-                templates = json.load(f)
-        
-        templates.append(template)
-        with open(TEMPLATES_PATH, "w") as f:
-            json.dump(templates, f, indent=2)
+
+        doc_ref = TEMPLATES_COLL.document()
+        doc_ref.set(template)
+        template["id"] = doc_ref.id
         return jsonify({"success": True, "template": template})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -319,7 +360,6 @@ def salvar_template_form():
 
         # 4. Montagem Estrutural
         template = {
-            "id": f"tmpl_{int(time.time())}",
             "liga": liga,
             "clube": clube,
             "nome_evento": nome_evento,
@@ -328,18 +368,10 @@ def salvar_template_form():
             "campos_completos": fields
         }
 
-        # 5. Operação de Leitura/Escrita no JSON com encoding explícito
-        try:
-            with open(TEMPLATES_PATH, "r", encoding="utf-8") as f:
-                templates = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            # Se o arquivo não existir ou estiver corrompido, inicia um novo array vazio
-            templates = []
-
-        templates.append(template)
-
-        with open(TEMPLATES_PATH, "w", encoding="utf-8") as f:
-            json.dump(templates, f, indent=2, ensure_ascii=False)
+        # 5. Gravação no Firestore com ID auto-gerado
+        doc_ref = TEMPLATES_COLL.document()
+        doc_ref.set(template)
+        template["id"] = doc_ref.id
 
         return jsonify({"success": True, "template": template}), 200
 
@@ -356,16 +388,17 @@ def deletar_template_batch():
     if not isinstance(template_ids, list) or not template_ids:
         return jsonify({"success": False, "error": "template_ids é obrigatório"}), 400
     try:
-        if not os.path.exists(TEMPLATES_PATH):
-            return jsonify({"success": False, "error": "Nenhum template encontrado"}), 404
-        with open(TEMPLATES_PATH, "r", encoding="utf-8") as f:
-            templates = json.load(f)
-        novos = [t for t in templates if str(t.get("id")) not in map(str, template_ids)]
-        if len(novos) == len(templates):
+        batch = db.batch()
+        excluidos = 0
+        for tid in template_ids:
+            ref = TEMPLATES_COLL.document(str(tid))
+            if ref.get().exists:
+                batch.delete(ref)
+                excluidos += 1
+        if excluidos == 0:
             return jsonify({"success": False, "error": "Nenhum template encontrado para exclusão"}), 404
-        with open(TEMPLATES_PATH, "w", encoding="utf-8") as f:
-            json.dump(novos, f, indent=2, ensure_ascii=False)
-        return jsonify({"success": True, "excluidos": len(templates) - len(novos)})
+        batch.commit()
+        return jsonify({"success": True, "excluidos": excluidos})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -376,15 +409,10 @@ def deletar_template():
     if not template_id:
         return jsonify({"success": False, "error": "template_id é obrigatório"}), 400
     try:
-        if not os.path.exists(TEMPLATES_PATH):
-            return jsonify({"success": False, "error": "Nenhum template encontrado"}), 404
-        with open(TEMPLATES_PATH, "r") as f:
-            templates = json.load(f)
-        novos = [t for t in templates if t.get("id") != template_id]
-        if len(novos) == len(templates):
+        ref = TEMPLATES_COLL.document(str(template_id))
+        if not ref.get().exists:
             return jsonify({"success": False, "error": "Template não encontrado"}), 404
-        with open(TEMPLATES_PATH, "w") as f:
-            json.dump(novos, f, indent=2)
+        ref.delete()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -399,6 +427,61 @@ def atualizar_labels():
         return jsonify({"success": False, "error": "card_id é obrigatório"}), 400
     try:
         update_card_labels(card_id, label_ids)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/salvar-torneio", methods=["POST"])
+def salvar_torneio():
+    data = request.get_json(silent=True) or {}
+    nome_torneio = (data.get("nome_torneio") or "").strip()
+    id_clas = data.get("id_clas")
+    responsavel = (data.get("responsavel") or "").strip()
+    data_torneio = (data.get("data_torneio") or "").strip()
+
+    if not nome_torneio:
+        return jsonify({"success": False, "error": "nome_torneio é obrigatório"}), 400
+    if id_clas is None or id_clas == "":
+        return jsonify({"success": False, "error": "id_clas é obrigatório"}), 400
+    if not responsavel:
+        return jsonify({"success": False, "error": "responsavel é obrigatório"}), 400
+    if not data_torneio:
+        return jsonify({"success": False, "error": "data_torneio é obrigatório"}), 400
+
+    try:
+        torneio = {
+            "nome_torneio": nome_torneio,
+            "id_clas": int(id_clas),
+            "responsavel": responsavel,
+            "data_torneio": data_torneio
+        }
+        doc_ref = TORNEIOS_COLL.document(str(id_clas))
+        doc_ref.set(torneio)
+        torneio_result = dict(torneio)
+        torneio_result["id"] = doc_ref.id
+        return jsonify({"success": True, "torneio": torneio_result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/torneios")
+def listar_torneios():
+    try:
+        docs = TORNEIOS_COLL.order_by("__name__").stream()
+        torneios = [d.to_dict() for d in docs]
+        return jsonify({"success": True, "torneios": torneios})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/deletar-torneio/<id_clas>", methods=["DELETE"])
+def deletar_torneio(id_clas):
+    try:
+        ref = TORNEIOS_COLL.document(str(id_clas))
+        if not ref.get().exists:
+            return jsonify({"success": False, "error": "Torneio não encontrado"}), 404
+        ref.delete()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
