@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
@@ -197,13 +197,13 @@
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
 </button>
 <div class="flex flex-col gap-3 relative">
-<div class="flex items-center gap-3 w-full">
+<div class="flex items-center gap-2 w-full">
 <span class="material-symbols-outlined drag-handle text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
 <h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
         {{ card.titulo }}
         </h4>
-<button data-acao="duplicar" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
-<span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+<button data-acao="duplicar" title="Clonar card" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<span class="material-symbols-outlined" style="font-size: 18px;">file_copy</span>
 </button>
 </div>
 <div class="grid grid-cols-2 gap-y-3 gap-x-3">
@@ -271,13 +271,13 @@
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
 </button>
 <div class="flex flex-col gap-3 relative">
-<div class="flex items-center gap-3 w-full">
+<div class="flex items-center gap-2 w-full">
 <span class="material-symbols-outlined drag-handle text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
 <h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
         {{ card.titulo }}
         </h4>
-<button data-acao="duplicar" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
-<span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+<button data-acao="duplicar" title="Clonar card" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<span class="material-symbols-outlined" style="font-size: 18px;">file_copy</span>
 </button>
 </div>
 <div class="grid grid-cols-2 gap-y-3 gap-x-3">
@@ -341,13 +341,13 @@
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
 </button>
 <div class="flex flex-col gap-3 relative">
-<div class="flex items-center gap-3 w-full">
+<div class="flex items-center gap-2 w-full">
 <span class="material-symbols-outlined drag-handle text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
 <h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
         {{ card.titulo }}
         </h4>
-<button data-acao="duplicar" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
-<span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+<button data-acao="duplicar" title="Clonar card" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<span class="material-symbols-outlined" style="font-size: 18px;">file_copy</span>
 </button>
 </div>
 <div class="grid grid-cols-2 gap-y-3 gap-x-3">
@@ -411,13 +411,16 @@
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
 </button>
 <div class="flex flex-col gap-3 relative">
-<div class="flex items-center gap-3 w-full">
+<div class="flex items-center gap-2 w-full">
 <span class="material-symbols-outlined drag-handle text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
 <h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
         {{ card.titulo }}
         </h4>
-<button data-acao="duplicar" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
-<span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+<button data-acao="duplicar" title="Clonar card" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<span class="material-symbols-outlined" style="font-size: 18px;">file_copy</span>
+</button>
+<button data-acao="copiar-whatsapp" title="Copiar para WhatsApp" onclick="copiarParaWhatsApp('{{ card.id }}', this, event)" class="flex items-center justify-center text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-[18px] h-[18px]"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 </button>
 </div>
 <div class="grid grid-cols-2 gap-y-3 gap-x-3">
@@ -481,13 +484,13 @@
 <span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>
 </button>
 <div class="flex flex-col gap-3 relative">
-<div class="flex items-center gap-3 w-full">
+<div class="flex items-center gap-2 w-full">
 <span class="material-symbols-outlined drag-handle text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>
 <h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">
         {{ card.titulo }}
         </h4>
-<button data-acao="duplicar" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
-<span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+<button data-acao="duplicar" title="Clonar card" class="text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">
+<span class="material-symbols-outlined" style="font-size: 18px;">file_copy</span>
 </button>
 </div>
 <div class="grid grid-cols-2 gap-y-3 gap-x-3">
@@ -3129,6 +3132,84 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   };
 })();
+</script>
+
+<script>
+// ===================================================================
+// COPIAR CARD PARA WHATSAPP (ÁREA DE TRANSFERÊNCIA)
+// ===================================================================
+function copiarParaWhatsApp(cardId, elementoIcone, evento) {
+  if (evento) evento.stopPropagation();
+
+  fetch('/api/cards/' + encodeURIComponent(cardId))
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (!data.success) throw new Error(data.error || 'Card não encontrado');
+
+      const campos = (data.card && data.card.campos) || [];
+      const normalizar = function (s) { return s ? String(s).toLowerCase().trim().replace(/\s+/g, ' ') : ''; };
+
+      const getCampo = function (chave) {
+        const busca = normalizar(chave);
+        let campo = campos.find(function (f) { return normalizar(f.name) === busca; });
+        if (!campo) campo = campos.find(function (f) { return normalizar(f.name).includes(busca); });
+        const v = (campo && campo.value != null && campo.value !== '') ? String(campo.value) : '';
+        return (v === '-' || v === '—') ? '' : v;
+      };
+
+      const bool = function (v) {
+        const s = String(v || '').toLowerCase();
+        if (s.includes('sim') || s.includes('yes')) return 'Sim';
+        if (s.includes('não') || s.includes('nao') || s.includes('no')) return 'Não';
+        return v;
+      };
+
+      const texto = [
+        'Nome do Evento: ' + getCampo('Nome do evento'),
+        'Modalidade: ' + getCampo('Modalidade'),
+        'N° de Jogadores: ' + getCampo('Nº de jogadores'),
+        'Premiação Garantida: ' + getCampo('Premiação garantida'),
+        'N° de Vagas Garantidas: ' + getCampo('Nº de vagas garantidas'),
+        'Valor do Ticket: ' + getCampo('Tickets'),
+        'Quantidade de Tickets: ',
+        'Buy-In: ' + getCampo('Buy-in'),
+        'Rebuy: ' + bool(getCampo('Rebuy')),
+        'Valor Rebuy: ' + getCampo('Rebuy (valor'),
+        'Stack Rebuy: ' + getCampo('Stack (rebuy)'),
+        'Quantidade Rebuy: ' + getCampo('Rebuys (qtd)'),
+        'Rebuy Duplo: ' + bool(getCampo('Rebuy duplo')),
+        'Add-on: ' + bool(getCampo('Add-on')),
+        'Valor Add-on: ' + getCampo('Add-on (valor'),
+        'Stack Add-on: ' + getCampo('Stack (add-on)'),
+        'Rake: ' + getCampo('Rake'),
+        'Blinds (Estrutura): ' + getCampo('Blinds (estrutura'),
+        'Stack de Fichas: ' + getCampo('Stack de fichas'),
+        'Tempo de Blind: ' + getCampo('Tempo de blinds'),
+        'Registro Tardio: ' + getCampo('Registro tardio'),
+        'Early Bird: ' + bool(getCampo('Early bird')),
+        'Early Bird Level: ' + getCampo('Early bird level'),
+        'Estrutura Early Bird: ' + getCampo('Estrutura de % early bird'),
+        'Data e Hora: ' + getCampo('Data e hora')
+      ].join('\n');
+
+      navigator.clipboard.writeText(texto)
+        .then(function () {
+          const originalHTML = elementoIcone.innerHTML;
+          elementoIcone.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">check</span>';
+          elementoIcone.classList.add('text-green-400');
+          setTimeout(function () {
+            elementoIcone.innerHTML = originalHTML;
+            elementoIcone.classList.remove('text-green-400');
+          }, 2000);
+        })
+        .catch(function () {
+          alert('Não foi possível copiar para a área de transferência.');
+        });
+    })
+    .catch(function (err) {
+      alert('Erro ao copiar: ' + err.message);
+    });
+}
 </script>
 
 <!-- Indicador de Versão (Deploy Control) -->
