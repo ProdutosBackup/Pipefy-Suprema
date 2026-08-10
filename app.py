@@ -58,7 +58,7 @@ def migrar_templates_file():
     print("[MIGRAÇÃO] templates.json transferido para Firestore (templates_pipefy).")
 
 
-#migrar_templates_file()
+migrar_templates_file()
 
 app = Flask(
     __name__,
@@ -439,6 +439,7 @@ def salvar_torneio():
     id_clas = data.get("id_clas")
     responsavel = (data.get("responsavel") or "").strip()
     data_torneio = (data.get("data_torneio") or "").strip()
+    status = (data.get("status") or "pendente").strip()
 
     if not nome_torneio:
         return jsonify({"success": False, "error": "nome_torneio é obrigatório"}), 400
@@ -454,10 +455,11 @@ def salvar_torneio():
             "nome_torneio": nome_torneio,
             "id_clas": int(id_clas),
             "responsavel": responsavel,
-            "data_torneio": data_torneio
+            "data_torneio": data_torneio,
+            "status": status
         }
         doc_ref = TORNEIOS_COLL.document(str(id_clas))
-        doc_ref.set(torneio)
+        doc_ref.set(torneio, merge=True)
         torneio_result = dict(torneio)
         torneio_result["id"] = doc_ref.id
         return jsonify({"success": True, "torneio": torneio_result})

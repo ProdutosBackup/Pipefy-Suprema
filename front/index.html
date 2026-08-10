@@ -2907,22 +2907,6 @@ document.addEventListener('DOMContentLoaded', function() {
   var tbodyTorneios = document.getElementById('tabela-torneios-body');
 
   var torneiosData = [];
-  var TORNEIOS_KEY = 'torneios_ids';
-
-  function carregarTorneiosLocal() {
-    try {
-      var arr = JSON.parse(localStorage.getItem(TORNEIOS_KEY) || '[]');
-      return Array.isArray(arr) ? arr : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  function salvarTorneiosLocal(arr) {
-    try {
-      localStorage.setItem(TORNEIOS_KEY, JSON.stringify(arr));
-    } catch (e) {}
-  }
 
   function alternarPaginaTorneios() {
     if (!kanbanContainer || !paginaTorneios) return;
@@ -3025,12 +3009,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function carregarTorneios() {
-    // // GET desativado temporariamente (Firestore offline)
-    // const resp = await fetch('/api/torneios');
-    // const data = await resp.json();
     if (!tbodyTorneios) return;
-    torneiosData = carregarTorneiosLocal();
-    renderizarTabela();
+    fetch('/api/torneios')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        torneiosData = (data && data.success && Array.isArray(data.torneios)) ? data.torneios : [];
+        renderizarTabela();
+      })
+      .catch(function (err) {
+        alert('Erro ao carregar torneios: ' + err.message);
+      });
   }
 
   if (formNovoTorneio) {
@@ -3042,9 +3030,6 @@ document.addEventListener('DOMContentLoaded', function() {
       const dataTorneio = document.getElementById('input-data-torneio').value.trim();
       if (!nomeTorneio || !idClas || !responsavel || !dataTorneio) return;
 
-      // // POST desativado temporariamente (Firebase offline)
-      // const resp = await fetch('/api/salvar-torneio', { ... });
-
       const torneio = {
         id_clas: Number(idClas),
         nome_torneio: nomeTorneio,
@@ -3052,12 +3037,25 @@ document.addEventListener('DOMContentLoaded', function() {
         data_torneio: dataTorneio,
         status: 'pendente'
       };
-      var lista = carregarTorneiosLocal();
-      lista.push(torneio);
-      salvarTorneiosLocal(lista);
-      formNovoTorneio.reset();
-      carregarTorneios();
-      formNovoTorneio.classList.add('hidden');
+
+      fetch('/api/salvar-torneio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(torneio)
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.success) {
+          alert('Erro: ' + (data.error || 'desconhecido'));
+          return;
+        }
+        formNovoTorneio.reset();
+        formNovoTorneio.classList.add('hidden');
+        carregarTorneios();
+      })
+      .catch(function (err) {
+        alert('Erro de rede: ' + err.message);
+      });
     });
   }
 
@@ -3077,23 +3075,58 @@ document.addEventListener('DOMContentLoaded', function() {
 
   window.setStatus = function (idClas, novoStatus) {
     if (idClas == null || idClas === '') return;
+    var torneio = null;
     torneiosData.forEach(function (t) {
       if (t.id_clas != null && String(t.id_clas) === String(idClas)) {
-        t.status = novoStatus;
+        torneio = t;
       }
     });
-    salvarTorneiosLocal(torneiosData);
-    renderizarTabela();
+    if (!torneio) return;
+
+    const payload = {
+      id_clas: Number(idClas),
+      nome_torneio: torneio.nome_torneio || '',
+      responsavel: torneio.responsavel || '',
+      data_torneio: torneio.data_torneio || '',
+      status: novoStatus
+    };
+
+    fetch('/api/salvar-torneio', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (!data.success) {
+        alert('Erro: ' + (data.error || 'desconhecido'));
+        return;
+      }
+      torneio.status = novoStatus;
+      renderizarTabela();
+    })
+    .catch(function (err) {
+      alert('Erro de rede: ' + err.message);
+    });
   };
 
   window.deletarTorneio = function (idClas) {
     if (!idClas) return;
     if (!confirm('Excluir este torneio?')) return;
-    var lista = carregarTorneiosLocal().filter(function (t) {
-      return !(t.id_clas != null && String(t.id_clas) === String(idClas));
+    fetch('/api/deletar-torneio/' + encodeURIComponent(idClas), {
+      method: 'DELETE'
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (!data.success) {
+        alert('Erro: ' + (data.error || 'desconhecido'));
+        return;
+      }
+      carregarTorneios();
+    })
+    .catch(function (err) {
+      alert('Erro de rede: ' + err.message);
     });
-    salvarTorneiosLocal(lista);
-    carregarTorneios();
   };
 })();
 </script>
