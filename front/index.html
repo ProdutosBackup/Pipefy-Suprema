@@ -106,12 +106,6 @@
         }
         
         /* Custom Colors */
-        .prompt-gradient-text { 
-            background: linear-gradient(135deg, #F4B04C 0%, #ECA045 50%, #D98522 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
         .kanban-card {
             transition: all 0.3s ease;
             position: relative;
@@ -149,7 +143,7 @@
             Suprema
       </div>
     </div>
-<nav class="flex items-center gap-10 ml-12"><a class="text-sm font-bold tracking-[0.1em] prompt-gradient-text uppercase" href="#">KANBAN</a><a class="text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">CLUBES</a><a id="nav-torneios" class="text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors cursor-pointer" href="#">IDs Torneios</a><a class="text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">ANALYTICS</a></nav>
+<nav class="flex items-center gap-10 ml-12"><a id="nav-torneios-privados" class="menu-link text-sm font-bold tracking-[0.1em] uppercase text-[#ECA045]" href="#">Torneios Privados</a><a id="nav-clubes" class="menu-link text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">Clubes</a><a id="nav-torneios" class="menu-link text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors cursor-pointer" href="#">IDs Torneios</a><a id="nav-analytics" class="menu-link text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">Analytics</a></nav>
 <div class="flex items-center gap-8">
 <div class="relative flex items-center">
 <span class="material-symbols-outlined absolute left-3 text-[#90887D] pointer-events-none" style="font-size: 18px;">search</span>
@@ -542,10 +536,19 @@
   <h2 class="text-[#ECA045] text-base font-bold tracking-wider mb-6 uppercase">IDs Torneios</h2>
 
   <div class="flex justify-between items-center mb-6 gap-6">
-    <button type="button" id="btn-add-clas"
-            class="inline-flex items-center gap-1 px-6 py-2.5 rounded-lg bg-[#ECA045] text-black font-bold text-sm hover:brightness-110 transition-all uppercase tracking-wider">
-      <span class="material-symbols-outlined" style="font-size:16px;">add</span> ADD TORNEIO
-    </button>
+    <div class="flex items-center gap-3">
+      <button type="button" id="btn-add-clas"
+              class="inline-flex items-center gap-1 px-6 py-2.5 rounded-lg bg-[#ECA045] text-black font-bold text-sm hover:brightness-110 transition-all uppercase tracking-wider">
+        <span class="material-symbols-outlined" style="font-size:16px;">add</span> ADD TORNEIO
+      </button>
+      <button type="button" id="btn-excluir-torneios"
+              class="inline-flex items-center gap-1 px-6 py-2.5 rounded-lg bg-red-950/60 hover:bg-red-900 border border-red-900/50 text-red-400 hover:text-red-300 font-bold text-sm transition-all uppercase tracking-wider">
+        <span class="material-symbols-outlined" style="font-size:16px;">delete</span> EXCLUIR
+      </button>
+      <button type="button" id="btn-cancelar-exclusao-torneios" class="hidden px-6 py-2.5 rounded-lg text-[#D4CFC7] hover:text-white hover:bg-[#2A2522] border border-[#403A35] font-bold text-sm transition-all uppercase tracking-wider">
+        Cancelar
+      </button>
+    </div>
     <div class="relative w-full md:w-1/2">
       <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#90887D] pointer-events-none" style="font-size:18px;">search</span>
       <input id="busca-torneios" type="text" placeholder="Pesquisar torneios (Nome, ID, Responsável, Data)..."
@@ -585,15 +588,16 @@
     <table class="w-full text-sm text-left table-fixed">
       <thead class="text-xs font-semibold uppercase tracking-wider text-[#7A7265] border-b border-[#302B27]">
         <tr>
-          <th class="py-4 px-4 w-[15%]">Data do Torneio</th>
-          <th class="py-4 px-4 w-[30%]">Nome do Torneio</th>
-          <th class="py-4 px-4 w-[20%]">ID Torneio</th>
+          <th class="py-4 px-4 w-[6%]"></th>
+          <th class="py-4 px-4 w-[12%]">Data do Torneio</th>
+          <th class="py-4 px-4 w-[28%]">Nome do Torneio</th>
+          <th class="py-4 px-4 w-[19%]">ID Torneio</th>
           <th class="py-4 px-4 w-[20%]">Responsável</th>
           <th class="py-4 px-4 w-[15%]">Status</th>
         </tr>
       </thead>
       <tbody id="tabela-torneios-body">
-        <tr id="linha-vazia-torneios"><td colspan="5" class="py-6 text-center text-[#7A7265]">Nenhum torneio cadastrado.</td></tr>
+        <tr id="linha-vazia-torneios"><td colspan="6" class="py-6 text-center text-[#7A7265]">Nenhum torneio cadastrado.</td></tr>
       </tbody>
     </table>
   </div>
@@ -763,7 +767,8 @@ function fecharModalCadastroTorneio() {
   document.getElementById('modal-cadastro-torneio').classList.add('hidden');
 }
 
-function salvarCadastroTorneio(btn) {
+function salvarCadastroTorneio(e) {
+  e.preventDefault();
   if (!torneioPendente) return;
   const idTorneio = document.getElementById('input-torneio-modal-id').value.trim();
   const responsavel = document.getElementById('input-torneio-modal-responsavel').value.trim();
@@ -776,6 +781,7 @@ function salvarCadastroTorneio(btn) {
   const dataTorneio = document.getElementById('input-torneio-modal-data').value.trim();
 
   const pendente = torneioPendente;
+  const btn = document.getElementById('btn-salvar-torneio-modal');
   btn.disabled = true;
   btn.textContent = 'Salvando...';
 
@@ -879,13 +885,33 @@ document.getElementById('pesquisa-input').addEventListener('input', function() {
     <button onclick="fecharModalTrava()" class="absolute top-3 right-3 text-[#90887D] hover:text-white transition-colors">
       <span class="material-symbols-outlined">close</span>
     </button>
-    <h3 class="text-[#ECA045] text-sm font-bold uppercase tracking-wider mb-5">ID TORNEIO CLAS</h3>
-    <input id="input-trava-clas" type="text" inputmode="numeric" maxlength="8" autocomplete="off"
-           placeholder="Digite o código (8 dígitos)"
-           class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:border-[#ECA045] focus:outline-none transition-colors">
-    <button id="btn-salvar-trava" disabled
-            class="mt-5 w-full px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider bg-[#2A2522] text-[#6B6560] cursor-not-allowed transition-all">SALVAR</button>
-    <button onclick="fecharModalTrava()" class="mt-2 w-full py-2 text-xs text-[#7A7265] hover:text-[#D4CFC7] transition-colors">Cancelar</button>
+    <h3 class="text-[#ECA045] text-sm font-bold uppercase tracking-wider mb-1">Cadastro Obrigatório de Torneio</h3>
+    <p class="text-xs text-[#7A7265] mb-5">Para anexar o print, cadastre o ID do torneio.</p>
+
+    <form id="form-trava-clas" onsubmit="salvarTrava(event)">
+      <label for="input-trava-nome" class="text-[10px] font-bold uppercase tracking-wider text-[#7A7265] mb-1 block">Nome do Torneio</label>
+      <input id="input-trava-nome" type="text" readonly
+             class="w-full bg-[#24201D] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:outline-none transition-colors mb-4">
+
+      <label for="input-trava-data" class="text-[10px] font-bold uppercase tracking-wider text-[#7A7265] mb-1 block">Data</label>
+      <input id="input-trava-data" type="text" readonly
+             class="w-full bg-[#24201D] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:outline-none transition-colors mb-4">
+
+      <label for="input-trava-clas" class="text-[10px] font-bold uppercase tracking-wider text-[#7A7265] mb-1 block">ID Torneio</label>
+      <input id="input-trava-clas" type="text" inputmode="numeric" maxlength="8" autocomplete="off" required
+             placeholder="Digite o código (8 dígitos)"
+             class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:border-[#ECA045] focus:outline-none transition-colors mb-4">
+
+      <label for="select-trava-responsavel" class="text-[10px] font-bold uppercase tracking-wider text-[#7A7265] mb-1 block">Responsável</label>
+      <select id="select-trava-responsavel" required
+              class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:border-[#ECA045] focus:outline-none transition-colors mb-5">
+        <option value="">Selecione...</option>
+      </select>
+
+      <button type="submit" id="btn-salvar-trava" disabled
+              class="w-full px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider bg-[#2A2522] text-[#6B6560] cursor-not-allowed transition-all">SALVAR</button>
+      <button type="button" onclick="fecharModalTrava()" class="mt-2 w-full py-2 text-xs text-[#7A7265] hover:text-[#D4CFC7] transition-colors">Cancelar</button>
+    </form>
   </div>
 </div>
 
@@ -899,27 +925,29 @@ document.getElementById('pesquisa-input').addEventListener('input', function() {
     <h3 class="text-[#ECA045] text-sm font-bold uppercase tracking-wider mb-1">Cadastro Obrigatório de Torneio</h3>
     <p class="text-xs text-[#7A7265] mb-5">Para mover o card para o LOBBY, cadastre o ID do torneio.</p>
 
-    <label for="input-torneio-modal-nome" class="text-[10px] font-bold uppercase tracking-wider text-[#7A7265] mb-1 block">Nome do Torneio</label>
-    <input id="input-torneio-modal-nome" type="text" readonly
-           class="w-full bg-[#24201D] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:outline-none transition-colors mb-4">
+    <form id="form-cadastro-torneio" onsubmit="salvarCadastroTorneio(event)">
+      <label for="input-torneio-modal-nome" class="text-[10px] font-bold uppercase tracking-wider text-[#7A7265] mb-1 block">Nome do Torneio</label>
+      <input id="input-torneio-modal-nome" type="text" readonly
+             class="w-full bg-[#24201D] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:outline-none transition-colors mb-4">
 
-    <label for="input-torneio-modal-data" class="text-[10px] font-bold uppercase tracking-wider text-[#7A7265] mb-1 block">Data do Torneio</label>
-    <input id="input-torneio-modal-data" type="text" readonly
-           class="w-full bg-[#24201D] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:outline-none transition-colors mb-4">
+      <label for="input-torneio-modal-data" class="text-[10px] font-bold uppercase tracking-wider text-[#7A7265] mb-1 block">Data do Torneio</label>
+      <input id="input-torneio-modal-data" type="text" readonly
+             class="w-full bg-[#24201D] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:outline-none transition-colors mb-4">
 
-    <label for="input-torneio-modal-id" class="text-[10px] font-bold uppercase tracking-wider text-[#7A7265] mb-1 block">ID Torneio</label>
-    <input id="input-torneio-modal-id" type="number" required autocomplete="off"
-           placeholder="Digite o ID do torneio"
-           class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:border-[#ECA045] focus:outline-none transition-colors mb-4">
+      <label for="input-torneio-modal-id" class="text-[10px] font-bold uppercase tracking-wider text-[#7A7265] mb-1 block">ID Torneio</label>
+      <input id="input-torneio-modal-id" type="number" required autocomplete="off"
+             placeholder="Digite o ID do torneio"
+             class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:border-[#ECA045] focus:outline-none transition-colors mb-4">
 
-    <label for="input-torneio-modal-responsavel" class="text-[10px] font-bold uppercase tracking-wider text-[#7A7265] mb-1 block">Responsável</label>
-    <input id="input-torneio-modal-responsavel" type="text" required autocomplete="off"
-           placeholder="Ex: João Silva"
-           class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:border-[#ECA045] focus:outline-none transition-colors mb-5">
+      <label for="input-torneio-modal-responsavel" class="text-[10px] font-bold uppercase tracking-wider text-[#7A7265] mb-1 block">Responsável</label>
+      <input id="input-torneio-modal-responsavel" type="text" required autocomplete="off"
+             placeholder="Ex: João Silva"
+             class="w-full bg-[#2A2522] border border-[#302B27] rounded-lg px-4 py-3 text-[#D4CFC7] text-sm focus:border-[#ECA045] focus:outline-none transition-colors mb-5">
 
-    <button id="btn-salvar-torneio-modal" onclick="salvarCadastroTorneio(this)"
-            class="w-full px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider bg-[#ECA045] text-black hover:brightness-110 transition-all">SALVAR</button>
-    <button onclick="fecharModalCadastroTorneio()" class="mt-2 w-full py-2 text-xs text-[#7A7265] hover:text-[#D4CFC7] transition-colors">Cancelar</button>
+      <button type="submit" id="btn-salvar-torneio-modal"
+              class="w-full px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider bg-[#ECA045] text-black hover:brightness-110 transition-all">SALVAR</button>
+      <button type="button" onclick="fecharModalCadastroTorneio()" class="mt-2 w-full py-2 text-xs text-[#7A7265] hover:text-[#D4CFC7] transition-colors">Cancelar</button>
+    </form>
   </div>
 </div>
 
@@ -1257,15 +1285,46 @@ document.addEventListener('pointerdown', function(e) {
     var modalTrava = document.getElementById('modal-trava-clas');
     var inputTrava = document.getElementById('input-trava-clas');
     var btnSalvarTrava = document.getElementById('btn-salvar-trava');
+    var selectResponsavel = document.getElementById('select-trava-responsavel');
 
-    if (!modalTrava || !inputTrava || !btnSalvarTrava) return;
+    if (!modalTrava || !inputTrava || !btnSalvarTrava || !selectResponsavel) return;
+
+    function preencherResponsaveis() {
+        var opcoes = [];
+        try {
+            var campo = FORM_FIELDS && FORM_FIELDS.aba1 && FORM_FIELDS.aba1.find(function (f) { return f.id === 'responsavel'; });
+            opcoes = (campo && campo.opcoes) || [];
+        } catch (e) {
+            opcoes = [];
+        }
+        selectResponsavel.innerHTML = '<option value="">Selecione...</option>';
+        opcoes.forEach(function (nome) {
+            var opt = document.createElement('option');
+            opt.value = nome;
+            opt.textContent = nome;
+            selectResponsavel.appendChild(opt);
+        });
+        selectResponsavel.value = '';
+    }
+
+    function atualizarEstadoBotao() {
+        var idOk = inputTrava.value.length === 8 && parseInt(inputTrava.value.substring(0, 2), 10) >= 46;
+        var respOk = selectResponsavel.value !== '';
+        btnSalvarTrava.disabled = !(idOk && respOk);
+        if (idOk && respOk) {
+            btnSalvarTrava.className = 'w-full px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider bg-[#ECA045] text-black hover:brightness-110 transition-all';
+        } else {
+            btnSalvarTrava.className = 'w-full px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider bg-[#2A2522] text-[#6B6560] cursor-not-allowed transition-all';
+        }
+    }
 
     function fecharModalTrava() {
         modalTrava.classList.add('hidden');
         inputTrava.value = '';
+        if (selectResponsavel) selectResponsavel.value = '';
         urlPendente = null;
         btnSalvarTrava.disabled = true;
-        btnSalvarTrava.className = 'mt-5 w-full px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider bg-[#2A2522] text-[#6B6560] cursor-not-allowed transition-all';
+        btnSalvarTrava.className = 'w-full px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider bg-[#2A2522] text-[#6B6560] cursor-not-allowed transition-all';
     }
 
     window.fecharModalTrava = fecharModalTrava;
@@ -1280,42 +1339,78 @@ document.addEventListener('pointerdown', function(e) {
 
         e.preventDefault();
         urlPendente = link.href;
+
+        var cardEl = document.querySelector('.kanban-card[data-card-id="' + cardIdAtual + '"]');
+        if (cardEl) {
+            document.getElementById('input-trava-nome').value = extrairNomeCard(cardEl);
+            document.getElementById('input-trava-data').value = extrairDataCard(cardEl);
+        }
+
+        preencherResponsaveis();
         inputTrava.value = '';
         btnSalvarTrava.disabled = true;
-        btnSalvarTrava.className = 'mt-5 w-full px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider bg-[#2A2522] text-[#6B6560] cursor-not-allowed transition-all';
+        btnSalvarTrava.className = 'w-full px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider bg-[#2A2522] text-[#6B6560] cursor-not-allowed transition-all';
         modalTrava.classList.remove('hidden');
         inputTrava.focus();
     });
 
-    // Validação em tempo real: exatamente 8 caracteres e prefixo >= 46
+    // Validação em tempo real: exatamente 8 caracteres, prefixo >= 46 e responsável selecionado
     inputTrava.addEventListener('input', function () {
         const v = this.value.replace(/\D/g, '').slice(0, 8);
         this.value = v;
+        atualizarEstadoBotao();
+    });
 
-        const valido = v.length === 8 && parseInt(v.substring(0, 2), 10) >= 46;
+    selectResponsavel.addEventListener('change', atualizarEstadoBotao);
 
-        btnSalvarTrava.disabled = !valido;
-
-        if (valido) {
-            btnSalvarTrava.className = 'mt-5 w-full px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider bg-[#ECA045] text-black hover:brightness-110 transition-all';
-        } else {
-            btnSalvarTrava.className = 'mt-5 w-full px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider bg-[#2A2522] text-[#6B6560] cursor-not-allowed transition-all';
+    // Salva no banco e SÓ DEPOIS abre o link do Pipefy (corrige o redirecionamento nulo)
+    window.salvarTrava = function (e) {
+        e.preventDefault();
+        if (!urlPendente || !String(urlPendente).startsWith('http')) {
+            alert('Não foi possível obter o link do Pipefy. Tente novamente.');
+            return;
         }
-    });
-
-    inputTrava.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            if (!btnSalvarTrava.disabled) btnSalvarTrava.click();
+        const idTorneio = inputTrava.value;
+        const responsavel = selectResponsavel.value;
+        if (!idTorneio || !responsavel) {
+            alert('Preencha o ID do torneio e selecione o responsável.');
+            return;
         }
-    });
+        const nomeTorneio = document.getElementById('input-trava-nome').value.trim();
+        const dataTorneio = document.getElementById('input-trava-data').value.trim();
 
-    // Continuidade: abre a URL original apenas se a validação passou
-    btnSalvarTrava.addEventListener('click', function () {
-        if (this.disabled || !urlPendente) return;
-        fecharModalTrava();
-        window.open(urlPendente, '_blank');
-    });
+        const link = urlPendente;
+        btnSalvarTrava.disabled = true;
+        btnSalvarTrava.textContent = 'Salvando...';
+
+        fetch('/api/salvar-torneio', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id_clas: Number(idTorneio),
+                nome_torneio: nomeTorneio,
+                responsavel: responsavel,
+                data_torneio: dataTorneio,
+                status: 'pendente'
+            })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (!d.success) {
+                alert('Erro: ' + (d.error || 'desconhecido'));
+                return;
+            }
+            fecharModalTrava();
+            if (typeof carregarTorneios === 'function') carregarTorneios();
+            window.open(link, '_blank');
+        })
+        .catch(err => alert('Erro de rede: ' + err.message))
+        .finally(() => {
+            btnSalvarTrava.disabled = false;
+            btnSalvarTrava.textContent = 'SALVAR';
+            atualizarEstadoBotao();
+        });
+    };
 })();
 </script>
 
@@ -3052,19 +3147,57 @@ document.addEventListener('DOMContentLoaded', function() {
   var tbodyTorneios = document.getElementById('tabela-torneios-body');
 
   var torneiosData = [];
+  var modoExclusao = false;
 
-  function alternarPaginaTorneios() {
+  function mostrarPagina(paginaId) {
     if (!kanbanContainer || !paginaTorneios) return;
-    var mostrar = paginaTorneios.classList.contains('hidden');
-    kanbanContainer.classList.toggle('hidden', mostrar);
-    paginaTorneios.classList.toggle('hidden', !mostrar);
-    if (mostrar) carregarTorneios();
+    kanbanContainer.classList.add('hidden');
+    paginaTorneios.classList.add('hidden');
+    var alvo = document.getElementById(paginaId);
+    if (alvo) alvo.classList.remove('hidden');
+  }
+
+  function atualizarMenuAtivo(botaoAtivo) {
+    document.querySelectorAll('.menu-link').forEach(function (link) {
+      if (link === botaoAtivo) {
+        link.classList.remove('text-[#90887D]');
+        link.classList.add('text-[#ECA045]');
+      } else {
+        link.classList.remove('text-[#ECA045]');
+        link.classList.add('text-[#90887D]');
+      }
+    });
+  }
+
+  var navTorneiosPrivados = document.getElementById('nav-torneios-privados');
+  if (navTorneiosPrivados) {
+    navTorneiosPrivados.addEventListener('click', function (e) {
+      e.preventDefault();
+      mostrarPagina('kanban-container');
+      atualizarMenuAtivo(navTorneiosPrivados);
+    });
   }
 
   if (navTorneios) {
     navTorneios.addEventListener('click', function (e) {
       e.preventDefault();
-      alternarPaginaTorneios();
+      mostrarPagina('pagina-torneios');
+      carregarTorneios();
+      atualizarMenuAtivo(navTorneios);
+    });
+  }
+
+  var navClubes = document.getElementById('nav-clubes');
+  if (navClubes) {
+    navClubes.addEventListener('click', function (e) {
+      e.preventDefault();
+    });
+  }
+
+  var navAnalytics = document.getElementById('nav-analytics');
+  if (navAnalytics) {
+    navAnalytics.addEventListener('click', function (e) {
+      e.preventDefault();
     });
   }
 
@@ -3103,7 +3236,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function renderizarTabelaVazia() {
     if (tbodyTorneios) {
       tbodyTorneios.innerHTML =
-        '<tr><td colspan="5" class="py-6 text-center text-[#7A7265]">Nenhum torneio cadastrado.</td></tr>';
+        '<tr><td colspan="6" class="py-6 text-center text-[#7A7265]">Nenhum torneio cadastrado.</td></tr>';
     }
   }
 
@@ -3135,7 +3268,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!filtrados.length) {
       tbodyTorneios.innerHTML =
-        '<tr><td colspan="5" class="py-6 text-center text-[#7A7265]">' +
+        '<tr><td colspan="6" class="py-6 text-center text-[#7A7265]">' +
         (torneiosData.length ? 'Nenhum torneio encontrado para a busca.' : 'Nenhum torneio cadastrado.') +
         '</td></tr>';
       return;
@@ -3144,6 +3277,9 @@ document.addEventListener('DOMContentLoaded', function() {
     tbodyTorneios.innerHTML = filtrados.map(function (t) {
       const idClas = t.id_clas != null ? String(t.id_clas) : '';
       return '<tr class="odd:bg-transparent even:bg-[#2A2522]/40 hover:bg-[#302B27] border-b border-[#302B27] transition-colors">' +
+        '<td class="py-3 px-4">' +
+        '<input type="checkbox" class="excluir-checkbox-torneio hidden w-4 h-4 accent-red-600 cursor-pointer" data-id="' + idClas + '">' +
+        '</td>' +
         '<td class="py-3 px-4 text-[#D4CFC7]">' + formatarDataBR(t.data_torneio) + '</td>' +
         '<td class="py-3 px-4 text-[#D4CFC7]">' + (t.nome_torneio || '') + '</td>' +
         '<td class="py-3 px-4 text-[#D4CFC7]">' + idClas + '</td>' +
@@ -3151,6 +3287,11 @@ document.addEventListener('DOMContentLoaded', function() {
         '<td class="py-3 px-4 text-left">' + badgeStatus(t, idClas) + '</td>' +
         '</tr>';
     }).join('');
+
+    document.querySelectorAll('.excluir-checkbox-torneio').forEach(function (cb) {
+      cb.classList.toggle('hidden', !modoExclusao);
+      if (!modoExclusao) cb.checked = false;
+    });
   }
 
   function carregarTorneios() {
@@ -3218,6 +3359,74 @@ document.addEventListener('DOMContentLoaded', function() {
     buscaTorneios.addEventListener('input', function () {
       renderizarTabela();
     });
+  }
+
+  var btnExcluirTorneios = document.getElementById('btn-excluir-torneios');
+  var btnCancelarExclusaoTorneios = document.getElementById('btn-cancelar-exclusao-torneios');
+
+  function entrarModoExclusao() {
+    modoExclusao = true;
+    if (btnExcluirTorneios) {
+      btnExcluirTorneios.classList.add('bg-red-600', 'hover:bg-red-700', 'text-white');
+      btnExcluirTorneios.classList.remove('bg-red-950/60', 'hover:bg-red-900', 'text-red-400', 'hover:text-red-300');
+      btnExcluirTorneios.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">delete</span> CONFIRMAR EXCLUSÃO';
+    }
+    if (btnCancelarExclusaoTorneios) btnCancelarExclusaoTorneios.classList.remove('hidden');
+    renderizarTabela();
+  }
+
+  function sairModoExclusao() {
+    modoExclusao = false;
+    if (btnExcluirTorneios) {
+      btnExcluirTorneios.classList.remove('bg-red-600', 'hover:bg-red-700', 'text-white');
+      btnExcluirTorneios.classList.add('bg-red-950/60', 'hover:bg-red-900', 'text-red-400', 'hover:text-red-300');
+      btnExcluirTorneios.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">delete</span> EXCLUIR';
+    }
+    if (btnCancelarExclusaoTorneios) btnCancelarExclusaoTorneios.classList.add('hidden');
+    renderizarTabela();
+  }
+
+  function confirmarExclusaoEmMassa() {
+    var selecionados = Array.from(document.querySelectorAll('.excluir-checkbox-torneio:checked'))
+      .map(function (cb) { return cb.dataset.id; })
+      .filter(function (id) { return id != null && id !== ''; });
+    if (selecionados.length === 0) {
+      alert('Selecione ao menos um torneio.');
+      return;
+    }
+    if (!confirm('Tem certeza que deseja excluir ' + selecionados.length + ' torneio(s) selecionado(s)?')) return;
+
+    if (btnExcluirTorneios) btnExcluirTorneios.disabled = true;
+    Promise.all(selecionados.map(function (id) {
+      return fetch('/api/deletar-torneio/' + encodeURIComponent(id), { method: 'DELETE' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) { return data && data.success === true; })
+        .catch(function () { return false; });
+    }))
+    .then(function (resultados) {
+      var falhas = resultados.filter(function (ok) { return !ok; }).length;
+      if (falhas > 0) {
+        alert(falhas + ' torneio(s) não puderam ser excluídos.');
+      }
+      carregarTorneios();
+      sairModoExclusao();
+    })
+    .finally(function () {
+      if (btnExcluirTorneios) btnExcluirTorneios.disabled = false;
+    });
+  }
+
+  if (btnExcluirTorneios) {
+    btnExcluirTorneios.addEventListener('click', function () {
+      if (modoExclusao) {
+        confirmarExclusaoEmMassa();
+      } else {
+        entrarModoExclusao();
+      }
+    });
+  }
+  if (btnCancelarExclusaoTorneios) {
+    btnCancelarExclusaoTorneios.addEventListener('click', sairModoExclusao);
   }
 
   window.setStatus = function (idClas, novoStatus) {
