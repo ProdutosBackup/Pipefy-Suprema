@@ -52,6 +52,29 @@ def fetch_cards_by_phase(phase_id):
     data = _post(query, variables={"phaseId": phase_id})
     return data.get("data", {}).get("phase", {}).get("cards", {}).get("edges", [])
 
+def fetch_cards_search(pipe_id, termo):
+    query = """
+    query ($pipeId: ID!, $termo: String!) {
+      cards(pipe_id: $pipeId, search: {title: $termo}, first: 200) {
+        edges {
+          node {
+            id
+            title
+            fields {
+              name
+              value
+            }
+            labels { id name color }
+            current_phase { id name }
+          }
+        }
+      }
+    }
+    """
+    data = _post(query, variables={"pipeId": pipe_id, "termo": termo})
+    return data.get("data", {}).get("cards", {}).get("edges", [])
+
+
 def fetch_phases(pipe_id):
     query = """
     query ($pipeId: ID!) {
@@ -198,11 +221,12 @@ def duplicate_card(card_id, pipe_id, phase_id):
         raise Exception("Card não encontrado")
 
     title = card_data.get("title", "")
-    fields_attributes = [
-        {"field_id": f["id"], "value": f.get("value", "")}
-        for f in card_data.get("fields", [])
-        if f.get("id")
-    ]
+    fields_attributes = []
+    for f in card_data.get("fields", []):
+        field_id = f.get("field", {}).get("id") or f.get("field_id")
+        if not field_id:
+            continue
+        fields_attributes.append({"field_id": field_id, "value": f.get("value", "")})
 
     query = """
     mutation ($pipeId: ID!, $phaseId: ID!, $title: String!, $fieldsAttributes: [FieldValueInput!]!) {

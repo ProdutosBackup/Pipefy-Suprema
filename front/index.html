@@ -605,6 +605,7 @@
 
 <script>
 let cardIdAtual = null;
+let abrirModalSeq = 0;
 
 const COLUNA_ORDEM = ['326331441','326331442','326331443','326331444','326331445'];
 
@@ -664,7 +665,9 @@ document.addEventListener('click', function(e) {
 });
 </script>
 <script>
-document.querySelectorAll('.coluna-body').forEach(el => {
+function reinitColumnSortable(el) {
+  const sortableInstance = Sortable.get(el);
+  if (sortableInstance) sortableInstance.destroy();
   new Sortable(el, {
     group: 'kanban',
     animation: 200,
@@ -689,6 +692,10 @@ document.querySelectorAll('.coluna-body').forEach(el => {
       moverCardParaFase(cardEl, evt.from, cardId, destFaseId);
     }
   });
+}
+
+document.querySelectorAll('.coluna-body').forEach(el => {
+  reinitColumnSortable(el);
 });
 
 function moverCardParaFase(cardEl, origemCol, cardId, destFaseId) {
@@ -824,26 +831,157 @@ function atualizarContadores() {
   });
 }
 
-document.getElementById('pesquisa-input').addEventListener('input', function() {
-  const termo = this.value.toLowerCase().trim();
-  const ativo = termo !== '';
+// ===================================================================
+// BUSCA GLOBAL NO BACKEND (Pipefy GraphQL) — state em memória
+// ===================================================================
+var estadoInicialKanban = {};
+var buscarSeq = 0;
 
-  document.querySelectorAll('.kanban-card').forEach(card => {
-    const corresponde = !ativo || card.textContent.toLowerCase().includes(termo);
-    card.classList.toggle('hidden', !corresponde);
+function capturarEstadoInicialKanban() {
+  estadoInicialKanban = {};
+  document.querySelectorAll('[data-fase-id] .coluna-body').forEach(function (colBody) {
+    estadoInicialKanban[colBody.parentElement.dataset.faseId] = colBody.innerHTML;
   });
+}
 
-  document.querySelectorAll('.adicionar-card-footer').forEach(el => {
-    el.classList.toggle('hidden', ativo);
+function restaurarEstadoInicialKanban() {
+  Object.keys(estadoInicialKanban).forEach(function (faseId) {
+    var colBody = document.querySelector('[data-fase-id="' + faseId + '"] .coluna-body');
+    if (colBody) colBody.innerHTML = estadoInicialKanban[faseId];
   });
+  atualizarContadores();
+}
 
-  document.querySelectorAll('[data-fase-id]').forEach(col => {
-    const badge = col.querySelector('.contador-badge');
-    if (badge) {
-      badge.textContent = col.querySelectorAll('.kanban-card:not(.hidden)').length;
-    }
+function atualizarBadgeColuna(col) {
+  const badge = col.querySelector('.contador-badge');
+  if (badge) badge.textContent = col.querySelectorAll('.kanban-card').length;
+}
+
+function renderizarCard(card) {
+  const clube = card.clube || '';
+  const clubeExibido = clube.length > 14 ? clube.slice(0, 14) + '.' : clube;
+
+  const labelsFiltradas = (card.labels || []).filter(function (l) { return l.name !== '+ de um vinculado'; });
+  const labelIds = JSON.stringify((card.labels || []).map(function (l) { return l.id; }));
+  const id = String(card.id || '');
+
+  let labelsHtml;
+  if (labelsFiltradas.length > 0) {
+    labelsHtml =
+      '<div class="flex flex-wrap gap-2 items-center mt-2 cursor-pointer hover:opacity-75 transition-opacity" ' +
+        'title="Editar Responsáveis" data-acao="editar-labels" ' +
+        "onclick='abrirModalLabels(\"" + id + "\", " + labelIds + ")'>" +
+      labelsFiltradas.slice(0, 3).map(function (label) {
+        return '<span class="px-3 py-1 rounded-full text-[11px] font-medium border" style="background-color: ' + label.color + '22; color: ' + label.color + '; border-color: ' + label.color + '55;">' + label.name + '</span>';
+      }).join('') +
+      '</div>';
+  } else {
+    labelsHtml =
+      '<button data-acao="editar-labels" ' +
+        "onclick=\"abrirModalLabels('" + id + "', [])\" " +
+        'class="mt-2 text-[10px] uppercase tracking-wider text-[#7A7265] hover:text-[#ECA045] border border-dashed border-[#302B27] hover:border-[#ECA045] rounded px-2 py-1 flex items-center transition-colors" ' +
+        'title="Adicionar Responsável">+ Adicionar Responsável</button>';
+  }
+
+  return '' +
+    '<div class="kanban-card rounded-xl p-3 border flex flex-col cursor-pointer overflow-hidden group relative" data-card-id="' + id + '" style="background-color: #231F1C; border-color: rgba(70, 63, 58, 0.4);">' +
+      '<button data-acao="mover-esquerda" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">' +
+        '<span class="material-symbols-outlined" style="font-size: 24px;">chevron_left</span>' +
+      '</button>' +
+      '<button data-acao="mover-direita" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#90887D] hover:text-[#ECA045] transition-opacity duration-200 opacity-0 group-hover:opacity-100">' +
+        '<span class="material-symbols-outlined" style="font-size: 24px;">chevron_right</span>' +
+      '</button>' +
+      '<div class="flex flex-col gap-3 relative">' +
+        '<div class="flex items-center gap-2 w-full">' +
+          '<span class="material-symbols-outlined drag-handle text-[rgba(255,255,255,0.2)] hover:text-[rgba(255,255,255,0.5)] transition-colors flex-shrink-0 cursor-grab active:cursor-grabbing" style="font-size: 18px;">drag_indicator</span>' +
+          '<h4 class="font-headline-md text-sm font-semibold text-[#FAF3E7] tracking-wide mb-2 flex-1 truncate text-center uppercase">' + (card.titulo || '') + '</h4>' +
+          '<button data-acao="duplicar" title="Clonar card" class="flex items-center justify-center leading-none text-secondary hover:text-primary transition-colors flex-shrink-0" style="color: rgb(144, 136, 125);">' +
+            '<span class="material-symbols-outlined" style="font-size: 18px;">file_copy</span>' +
+          '</button>' +
+        '</div>' +
+        '<div class="grid grid-cols-2 gap-y-3 gap-x-3">' +
+          '<div class="text-center flex flex-col items-center">' +
+            '<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">CLUBE</div>' +
+            '<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">' + clubeExibido + '</div>' +
+          '</div>' +
+          '<div class="text-center flex flex-col items-center">' +
+            '<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">MODALIDADE</div>' +
+            '<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">' + (card.jogo || '') + '</div>' +
+          '</div>' +
+          '<div class="text-center flex flex-col items-center">' +
+            '<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">DATA</div>' +
+            '<div class="text-xs font-medium text-[#D4CFC7] truncate uppercase">' + (card.data_hora || '') + '</div>' +
+          '</div>' +
+          '<div class="text-center flex flex-col items-center">' +
+            '<div class="text-[9px] font-medium text-[#7A7265] uppercase tracking-widest">PROTOCOLO</div>' +
+            '<div class="text-xs font-medium text-[#ECA045] truncate uppercase">' + (card.protocolo || '') + '</div>' +
+          '</div>' +
+        '</div>' +
+        labelsHtml +
+      '</div>' +
+    '</div>';
+}
+
+function preencherColunasBusca(cardsPorFase) {
+  document.querySelectorAll('[data-fase-id]').forEach(function (col) {
+    const faseId = col.dataset.faseId;
+    const cards = cardsPorFase[faseId] || [];
+    const colBody = col.querySelector('.coluna-body');
+    if (!colBody) return;
+
+    colBody.innerHTML = cards.length
+      ? cards.map(renderizarCard).join('')
+      : '<div class="py-8 text-center text-xs text-[#7A7265] uppercase tracking-wider">Nenhum card encontrado</div>';
+
+    if (typeof reinitColumnSortable === 'function') reinitColumnSortable(colBody);
+    atualizarBadgeColuna(col);
   });
-});
+}
+
+function buscarCards(termo) {
+  const seq = ++buscarSeq;
+  if (!termo) {
+    if (seq === buscarSeq) restaurarEstadoInicialKanban();
+    return;
+  }
+
+  fetch('/api/buscar?q=' + encodeURIComponent(termo))
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (seq !== buscarSeq) return;
+      if (!data.success) throw new Error(data.error || 'Erro na busca');
+
+      const cardsPorFase = {};
+      (data.cards || []).forEach(function (card) {
+        if (!card.fase_id) return;
+        if (!cardsPorFase[card.fase_id]) cardsPorFase[card.fase_id] = [];
+        cardsPorFase[card.fase_id].push(card);
+      });
+
+      preencherColunasBusca(cardsPorFase);
+    })
+    .catch(function (err) {
+      if (seq !== buscarSeq) return;
+      console.error('Erro ao buscar cards:', err);
+      restaurarEstadoInicialKanban();
+    });
+}
+
+(function () {
+  const input = document.getElementById('pesquisa-input');
+  if (!input) return;
+
+  capturarEstadoInicialKanban();
+  let debounceTimer = null;
+
+  input.addEventListener('input', function () {
+    const termo = this.value.trim();
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function () {
+      buscarCards(termo);
+    }, 500);
+  });
+})();
 </script>
 
 <!-- Modal de Detalhes do Card -->
@@ -953,10 +1091,13 @@ document.getElementById('pesquisa-input').addEventListener('input', function() {
 
 <script>
 function abrirModal(cardId) {
+  const currentSeq = ++abrirModalSeq;
+  document.getElementById('card-modal').dataset.cardId = cardId;
   mostrarLoading('ABRINDO CARD...');
   fetch(`/api/cards/${cardId}`)
     .then(r => r.json())
     .then(data => {
+      if (currentSeq !== abrirModalSeq) return;
       if (!data.success) return;
 
             cardIdAtual = cardId;
@@ -1233,9 +1374,12 @@ function abrirModal(cardId) {
             alternarAba('aba1');
             document.getElementById('card-modal').classList.remove('hidden');
         })
-        .catch(err => console.error(err))
+        .catch(err => {
+          if (currentSeq !== abrirModalSeq) return;
+          console.error(err);
+        })
         .finally(() => {
-          ocultarLoading();
+          if (currentSeq === abrirModalSeq) ocultarLoading();
         });
 }
 
@@ -3541,7 +3685,9 @@ function copiarParaWhatsApp(cardId, elementoIcone, evento) {
         'Registro Tardio: ' + getCampo('Registro tardio'),
         'Early Bird: ' + bool(getCampo('Early bird')),
         'Early Bird Level: ' + getCampo('Early bird level'),
-        'Estrutura Early Bird: ' + getCampo('Estrutura de % early bird'),
+        ...(getCampo('Estrutura/structure de % do early bird')
+          ? ['Estrutura Early Bird: ' + getCampo('Estrutura/structure de % do early bird')]
+          : []),
         'Data e Hora: ' + getCampo('Data e hora')
       ].join('\n');
 

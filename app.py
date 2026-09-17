@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
-from api.pipefy_client import fetch_cards_by_phase, fetch_card_by_id, move_card_to_phase, duplicate_card, clone_card, update_card_field, fetch_phase_fields, create_card, fetch_start_form_fields, update_card_labels
+from api.pipefy_client import fetch_cards_by_phase, fetch_cards_search, fetch_card_by_id, move_card_to_phase, duplicate_card, clone_card, update_card_field, fetch_phase_fields, create_card, fetch_start_form_fields, update_card_labels
 from utils.helpers import transform_pipefy_card, sort_cards_by_date
 
 import firebase_admin
@@ -219,6 +219,31 @@ def card_detalhes(card_id):
                 ]
             }
         })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/buscar")
+def buscar_cards():
+    q = request.args.get("q", "").strip()
+    if not q:
+        return jsonify({"success": True, "cards": []})
+
+    pipe_id = os.environ.get("PIPEFY_PIPE_ID")
+    if not pipe_id:
+        return jsonify({"success": False, "error": "PIPEFY_PIPE_ID não configurado"}), 500
+
+    try:
+        raw = fetch_cards_search(pipe_id, q)
+        cards = []
+        for e in raw:
+            card = transform_pipefy_card(e)
+            node = e.get("node", {})
+            phase = node.get("current_phase", {}) or {}
+            card["fase_id"] = phase.get("id")
+            card["fase_nome"] = phase.get("name")
+            cards.append(card)
+        return jsonify({"success": True, "cards": cards})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
