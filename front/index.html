@@ -143,7 +143,7 @@
             Suprema
       </div>
     </div>
-<nav class="flex items-center gap-10 ml-12"><a id="nav-torneios-privados" class="menu-link text-sm font-bold tracking-[0.1em] uppercase text-[#ECA045]" href="#">Torneios Privados</a><a id="nav-clubes" class="menu-link text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">Clubes</a><a id="nav-torneios" class="menu-link text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors cursor-pointer" href="#">IDs Torneios</a><a id="nav-analytics" class="menu-link text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">Analytics</a></nav>
+<nav class="flex items-center gap-10 ml-12">{% if session.get('role') == 'admin' %}<a id="nav-torneios-privados" class="menu-link text-sm font-bold tracking-[0.1em] uppercase text-[#ECA045]" href="#">Torneios Privados</a><a id="nav-clubes" class="menu-link text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">Clubes</a>{% endif %}<a id="nav-torneios" class="menu-link text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors cursor-pointer" href="#">IDs Torneios</a><a id="nav-analytics" class="menu-link text-sm font-bold tracking-[0.1em] uppercase text-[#90887D] hover:text-[#FAF3E7] transition-colors" href="#">Analytics</a></nav>
 <div class="flex items-center gap-8">
 <div class="relative flex items-center">
 <span class="material-symbols-outlined absolute left-3 text-[#90887D] pointer-events-none" style="font-size: 18px;">search</span>

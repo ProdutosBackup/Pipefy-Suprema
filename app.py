@@ -1,41 +1,56 @@
 import os
 import json
 from datetime import datetime
+from functools import wraps
 from dotenv import load_dotenv
+import requests
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from api.pipefy_client import fetch_cards_by_phase, fetch_cards_search, fetch_card_by_id, move_card_to_phase, duplicate_card, clone_card, update_card_field, fetch_phase_fields, create_card, fetch_start_form_fields, update_card_labels
 from utils.helpers import transform_pipefy_card, sort_cards_by_date
 
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, auth, db
 
 load_dotenv()
 
 TEMPLATES_PATH = os.path.join(os.path.dirname(__file__), "templates.json")
-LOCAL_CREDENTIALS_PATH = os.path.join(os.path.dirname(__file__), "firebase-key.json")
+SUPREMA_CREDENTIALS_PATH = os.path.join(os.path.dirname(__file__), "suprema-os-key.json")
+SUPREMA_DATABASE_URL = "https://suprema-os-330f6-default-rtdb.firebaseio.com/"
 
 
-def _get_firebase_credentials():
-    raw = os.environ.get("FIREBASE_CREDENTIALS")
+def _get_suprema_credentials():
+    raw = os.environ.get("SUPREMA_OS_CREDENTIALS")
     if raw:
         try:
             return json.loads(raw)
         except json.JSONDecodeError:
-            raise RuntimeError("FIREBASE_CREDENTIALS está presente mas é um JSON inválido.")
-    if os.path.exists(LOCAL_CREDENTIALS_PATH):
-        with open(LOCAL_CREDENTIALS_PATH, "r", encoding="utf-8") as f:
+            raise RuntimeError("SUPREMA_OS_CREDENTIALS está presente mas é um JSON inválido.")
+    if os.path.exists(SUPREMA_CREDENTIALS_PATH):
+        with open(SUPREMA_CREDENTIALS_PATH, "r", encoding="utf-8") as f:
             return json.load(f)
     raise RuntimeError(
-        "Credenciais do Firebase ausentes. Defina a env var FIREBASE_CREDENTIALS "
-        "ou crie o arquivo local firebase-key.json."
+        "Credenciais do Suprema-OS ausentes. Defina a env var SUPREMA_OS_CREDENTIALS "
+        "ou crie o arquivo local suprema-os-key.json."
     )
 
 
-_credentials = _get_firebase_credentials()
-firebase_admin.initialize_app(credentials.Certificate(_credentials))
-db = firestore.client()
-TEMPLATES_COLL = db.collection("templates_pipefy")
-TORNEIOS_COLL = db.collection("torneios_ids")
+_suprema_credentials = _get_suprema_credentials()
+
+firebase_admin.initialize_app(
+    credentials.Certificate(_suprema_credentials),
+    {"databaseURL": SUPREMA_DATABASE_URL},
+)
+db_firestore = firestore.client()
+TEMPLATES_COLL = db_firestore.collection("templates_pipefy")
+TORNEIOS_COLL = db_firestore.collection("torneios_ids")
+
+
+def user_ref(uid):
+    return db.reference(f"users/{uid}")
+
+DOMINIO_PERMITIDO = "@suprema.group"
+IDENTITY_TOOLKIT_SIGNIN = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
+ROTAS_API_PUBLICAS = ("/api/auth", "/api/criar-conta")
 
 
 def migrar_templates_file():
@@ -50,7 +65,7 @@ def migrar_templates_file():
         if not isinstance(templates, list):
             return
         for i in range(0, len(templates), 500):
-            batch = db.batch()
+            batch = db_firestore.batch()
             for t in templates[i:i + 500]:
                 batch.set(TEMPLATES_COLL.document(), t)
             batch.commit()
@@ -77,6 +92,28 @@ COLUNAS = {
     "Concluido":            {"id": "326331445"},
 }
 
+
+@app.before_request
+def proteger_api():
+    if not request.path.startswith("/api/"):
+        return None
+    if request.path in ROTAS_API_PUBLICAS:
+        return None
+    if not session.get("logado"):
+        return jsonify({"success": False, "error": "Não autenticado."}), 401
+    return None
+
+
+def admin_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not session.get("logado"):
+            return jsonify({"success": False, "error": "Não autenticado."}), 401
+        if session.get("role") != "admin":
+            return jsonify({"success": False, "error": "Acesso restrito a administradores."}), 403
+        return f(*args, **kwargs)
+    return wrapper
+
 @app.route("/")
 def index():
     if not session.get('logado'):
@@ -101,25 +138,73 @@ def login_page():
 @app.route("/api/auth", methods=["POST"])
 def api_auth():
     data = request.get_json(silent=True) or {}
-    email = data.get("email", "").strip()
-    senha = data.get("senha", "").strip()
+    email = (data.get("email") or "").strip().lower()
+    senha = data.get("senha") or ""
 
-    caminho_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'usuarios.json')
+    if not email or not senha:
+        return jsonify({"success": False, "error": "E-mail e senha são obrigatórios."}), 400
 
-    usuarios_permitidos = {}
+    api_key = os.getenv("FIREBASE_API_KEY")
+    if not api_key:
+        return jsonify({"success": False, "error": "FIREBASE_API_KEY não configurada no servidor."}), 500
+
     try:
-        with open(caminho_json, 'r', encoding='utf-8') as f:
-            usuarios_permitidos = json.load(f)
+        resp = requests.post(
+            f"{IDENTITY_TOOLKIT_SIGNIN}?key={api_key}",
+            json={"email": email, "password": senha, "returnSecureToken": True},
+            timeout=10,
+        )
+    except requests.RequestException:
+        return jsonify({"success": False, "error": "Erro de conexão com o serviço de autenticação."}), 502
+
+    if resp.status_code != 200:
+        return jsonify({"success": False, "error": "E-mail ou senha incorretos."}), 401
+
+    uid = (resp.json() or {}).get("localId")
+    if not uid:
+        return jsonify({"success": False, "error": "Autenticação inválida."}), 401
+
+    perfil = user_ref(uid).get() or {}
+    nome = perfil.get("nome") or email.split("@")[0]
+    role = perfil.get("role") or "user"
+
+    session['logado'] = True
+    session['email'] = email
+    session['nome'] = nome
+    session['role'] = role
+    return jsonify({"success": True})
+
+
+@app.route("/api/criar-conta", methods=["POST"])
+def api_criar_conta():
+    data = request.get_json(silent=True) or {}
+    nome = (data.get("nome") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    senha = data.get("senha") or ""
+
+    if not email.endswith(DOMINIO_PERMITIDO):
+        return jsonify({"success": False, "error": "Apenas e-mails @suprema.group são permitidos."}), 403
+    if not nome or not senha:
+        return jsonify({"success": False, "error": "Nome e senha são obrigatórios."}), 400
+    if len(senha) < 6:
+        return jsonify({"success": False, "error": "A senha deve ter no mínimo 6 caracteres."}), 400
+
+    try:
+        user = auth.create_user(email=email, password=senha, display_name=nome)
+    except auth.EmailAlreadyExistsError:
+        return jsonify({"success": False, "error": "Já existe uma conta com este e-mail."}), 409
     except Exception as e:
-        print(f"Erro ao ler usuarios.json: {e}")
-        return jsonify({"success": False, "error": "Erro interno no servidor de autenticação."}), 500
+        return jsonify({"success": False, "error": f"Falha ao criar usuário: {e}"}), 500
 
-    if email in usuarios_permitidos and str(usuarios_permitidos[email]) == str(senha):
-        session['logado'] = True
-        session['email'] = email
-        return jsonify({"success": True})
-
-    return jsonify({"success": False, "error": "E-mail ou senha incorretos."}), 401
+    try:
+        user_ref(user.uid).set({
+            "nome": nome,
+            "email": email,
+            "role": "user",
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Falha ao salvar perfil: {e}"}), 500
+    return jsonify({"success": True})
 
 @app.route("/logout")
 def logout():
@@ -413,7 +498,7 @@ def deletar_template_batch():
     if not isinstance(template_ids, list) or not template_ids:
         return jsonify({"success": False, "error": "template_ids é obrigatório"}), 400
     try:
-        batch = db.batch()
+        batch = db_firestore.batch()
         excluidos = 0
         for tid in template_ids:
             ref = TEMPLATES_COLL.document(str(tid))

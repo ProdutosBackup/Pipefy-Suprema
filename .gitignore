@@ -3,3 +3,4 @@ functions/.env
 .firebase/
 *.log
 firebase-key.json
+suprema-os-key.json
