@@ -14,30 +14,20 @@ from firebase_admin import credentials, firestore, auth, db
 load_dotenv()
 
 TEMPLATES_PATH = os.path.join(os.path.dirname(__file__), "templates.json")
-SUPREMA_CREDENTIALS_PATH = os.path.join(os.path.dirname(__file__), "suprema-os-key.json")
 SUPREMA_DATABASE_URL = "https://suprema-os-330f6-default-rtdb.firebaseio.com/"
 
-
-def _get_suprema_credentials():
-    raw = os.environ.get("SUPREMA_OS_CREDENTIALS")
-    if raw:
-        try:
-            return json.loads(raw)
-        except json.JSONDecodeError:
-            raise RuntimeError("SUPREMA_OS_CREDENTIALS está presente mas é um JSON inválido.")
-    if os.path.exists(SUPREMA_CREDENTIALS_PATH):
-        with open(SUPREMA_CREDENTIALS_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    raise RuntimeError(
-        "Credenciais do Suprema-OS ausentes. Defina a env var SUPREMA_OS_CREDENTIALS "
-        "ou crie o arquivo local suprema-os-key.json."
-    )
-
-
-_suprema_credentials = _get_suprema_credentials()
+firebase_cred_env = os.environ.get('FIREBASE_CREDENTIALS')
+if firebase_cred_env:
+    try:
+        cred_dict = json.loads(firebase_cred_env)
+    except json.JSONDecodeError:
+        cred_dict = json.loads(firebase_cred_env.replace('\\n', '\n'))
+    cred = credentials.Certificate(cred_dict)
+else:
+    cred = credentials.Certificate('suprema-os-key.json')
 
 firebase_admin.initialize_app(
-    credentials.Certificate(_suprema_credentials),
+    cred,
     {"databaseURL": SUPREMA_DATABASE_URL},
 )
 db_firestore = firestore.client()
